@@ -59,7 +59,7 @@ where
 {
     type D<F> = GeneralEvaluationDomain<F>;
 
-    let setup_time = start_timer!(|| "Groth16::Generator");
+    let setup_time = start_timer!(|| "BPR20::Generator");
     let cs = ConstraintSystem::new_ref();
     cs.set_optimization_goal(OptimizationGoal::Constraints);
     cs.set_mode(SynthesisMode::Setup);
@@ -172,7 +172,7 @@ where
             .map(|i| zt * &delta_inverse * &t.pow([i as u64]))
             .collect::<Vec<_>>(),
     );
-
+    let g1_zt_deltainverse = h_query[0];
     end_timer!(h_time);
 
     // Compute the L-query
@@ -208,6 +208,8 @@ where
         gamma_g2: gamma_g2.into_affine(),
         delta_g2: delta_g2.into_affine(),
         gamma_abc_g1: E::G1Projective::batch_normalization_into_affine(&gamma_abc_g1),
+        alpha_g1_beta_g2: E::pairing(alpha_g1, beta_g2),
+        zt_gt: E::pairing(g1_zt_deltainverse, delta_g2),
     };
 
     let batch_normalization_time = start_timer!(|| "Convert proving key elements to affine");

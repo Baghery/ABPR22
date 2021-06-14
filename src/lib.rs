@@ -1,6 +1,6 @@
-//! An implementation of the [`Groth16`] zkSNARK.
+//! An implementation of the [`BPR20`] zkSNARK.
 //!
-//! [`Groth16`]: https://eprint.iacr.org/2016/260.pdf
+//! [`BPR20`]: https://eprint.iacr.org/2020/1306
 #![cfg_attr(not(feature = "std"), no_std)]
 #![warn(
     unused,
@@ -25,16 +25,16 @@ pub(crate) mod r1cs_to_qap;
 /// Data structures used by the prover, verifier, and generator.
 pub mod data_structures;
 
-/// Generate public parameters for the Groth16 zkSNARK construction.
+/// Generate public parameters for the BPR20 zkSNARK construction.
 pub mod generator;
 
-/// Create proofs for the Groth16 zkSNARK construction.
+/// Create proofs for the BPR20 zkSNARK construction.
 pub mod prover;
 
-/// Verify proofs for the Groth16 zkSNARK construction.
+/// Verify proofs for the BPR20 zkSNARK construction.
 pub mod verifier;
 
-/// Constraints for the Groth16 verifier.
+/// Constraints for the BPR20 verifier.
 #[cfg(feature = "r1cs")]
 pub mod constraints;
 
@@ -50,12 +50,12 @@ use ark_relations::r1cs::{ConstraintSynthesizer, SynthesisError};
 use ark_std::rand::RngCore;
 use ark_std::{marker::PhantomData, vec::Vec};
 
-/// The SNARK of [[Groth16]](https://eprint.iacr.org/2016/260.pdf).
-pub struct Groth16<E: PairingEngine> {
+/// The SNARK of [[BPR20]](https://eprint.iacr.org/2020/1306.pdf).
+pub struct BPR20<E: PairingEngine> {
     e_phantom: PhantomData<E>,
 }
 
-impl<E: PairingEngine> SNARK<E::Fr> for Groth16<E> {
+impl<E: PairingEngine> SNARK<E::Fr> for BPR20<E> {
     type ProvingKey = ProvingKey<E>;
     type VerifyingKey = VerifyingKey<E>;
     type Proof = Proof<E>;
@@ -95,4 +95,4 @@ impl<E: PairingEngine> SNARK<E::Fr> for Groth16<E> {
     }
 }
 
-impl<E: PairingEngine> CircuitSpecificSetupSNARK<E::Fr> for Groth16<E> {}
+impl<E: PairingEngine> CircuitSpecificSetupSNARK<E::Fr> for BPR20<E> {}

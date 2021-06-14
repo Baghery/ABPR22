@@ -6,7 +6,7 @@ use ark_std::{
     vec::Vec,
 };
 
-/// A proof in the Groth16 SNARK.
+/// A proof in the BPR20 SNARK.
 #[derive(Clone, Debug, PartialEq, CanonicalSerialize, CanonicalDeserialize)]
 pub struct Proof<E: PairingEngine> {
     /// The `A` element in `G1`.
@@ -15,6 +15,10 @@ pub struct Proof<E: PairingEngine> {
     pub b: E::G2Affine,
     /// The `C` element in `G1`.
     pub c: E::G1Affine,
+    /// The `delta'` element in `G2`.
+    pub delta_prime: E::G2Affine,
+    /// The `D'` element in `G1`.
+    pub d: E::G1Affine,
 }
 
 impl<E: PairingEngine> ToBytes for Proof<E> {
@@ -22,7 +26,9 @@ impl<E: PairingEngine> ToBytes for Proof<E> {
     fn write<W: Write>(&self, mut writer: W) -> io::Result<()> {
         self.a.write(&mut writer)?;
         self.b.write(&mut writer)?;
-        self.c.write(&mut writer)
+        self.c.write(&mut writer)?;
+        self.delta_prime.write(&mut writer)?;
+        self.d.write(&mut writer)
     }
 }
 
@@ -32,6 +38,8 @@ impl<E: PairingEngine> Default for Proof<E> {
             a: E::G1Affine::default(),
             b: E::G2Affine::default(),
             c: E::G1Affine::default(),
+            delta_prime: E::G2Affine::default(),
+            d: E::G1Affine::default(),
         }
     }
 }
@@ -39,7 +47,7 @@ impl<E: PairingEngine> Default for Proof<E> {
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-/// A verification key in the Groth16 SNARK.
+/// A verification key in the BPR20 SNARK.
 #[derive(Clone, Debug, PartialEq, CanonicalSerialize, CanonicalDeserialize)]
 pub struct VerifyingKey<E: PairingEngine> {
     /// The `alpha * G`, where `G` is the generator of `E::G1`.
@@ -52,6 +60,10 @@ pub struct VerifyingKey<E: PairingEngine> {
     pub delta_g2: E::G2Affine,
     /// The `gamma^{-1} * (beta * a_i + alpha * b_i + c_i) * H`, where `H` is the generator of `E::G1`.
     pub gamma_abc_g1: Vec<E::G1Affine>,
+    /// The element `e(alpha * G, beta * H)` in `E::GT`.
+    pub alpha_g1_beta_g2: E::Fqk,
+    /// The element `e((zt*gamma^{-1}) * G, delta * H)` in `E::GT` which is equal to [zt]_E::GT.
+    pub zt_gt: E::Fqk,
 }
 
 impl<E: PairingEngine> ToBytes for VerifyingKey<E> {
@@ -63,6 +75,8 @@ impl<E: PairingEngine> ToBytes for VerifyingKey<E> {
         for q in &self.gamma_abc_g1 {
             q.write(&mut writer)?;
         }
+        self.alpha_g1_beta_g2.write(&mut writer)?;
+        self.zt_gt.write(&mut writer)?;
         Ok(())
     }
 }
@@ -75,6 +89,8 @@ impl<E: PairingEngine> Default for VerifyingKey<E> {
             gamma_g2: E::G2Affine::default(),
             delta_g2: E::G2Affine::default(),
             gamma_abc_g1: Vec::new(),
+            alpha_g1_beta_g2: E::Fqk::default(),
+            zt_gt: E::Fqk::default(),
         }
     }
 }
@@ -85,12 +101,8 @@ impl<E: PairingEngine> Default for VerifyingKey<E> {
 pub struct PreparedVerifyingKey<E: PairingEngine> {
     /// The unprepared verification key.
     pub vk: VerifyingKey<E>,
-    /// The element `e(alpha * G, beta * H)` in `E::GT`.
-    pub alpha_g1_beta_g2: E::Fqk,
     /// The element `- gamma * H` in `E::G2`, prepared for use in pairings.
     pub gamma_g2_neg_pc: E::G2Prepared,
-    /// The element `- delta * H` in `E::G2`, prepared for use in pairings.
-    pub delta_g2_neg_pc: E::G2Prepared,
 }
 
 impl<E: PairingEngine> From<PreparedVerifyingKey<E>> for VerifyingKey<E> {
@@ -109,9 +121,7 @@ impl<E: PairingEngine> Default for PreparedVerifyingKey<E> {
     fn default() -> Self {
         Self {
             vk: VerifyingKey::default(),
-            alpha_g1_beta_g2: E::Fqk::default(),
             gamma_g2_neg_pc: E::G2Prepared::default(),
-            delta_g2_neg_pc: E::G2Prepared::default(),
         }
     }
 }
@@ -119,9 +129,7 @@ impl<E: PairingEngine> Default for PreparedVerifyingKey<E> {
 impl<E: PairingEngine> ToBytes for PreparedVerifyingKey<E> {
     fn write<W: Write>(&self, mut writer: W) -> IoResult<()> {
         self.vk.write(&mut writer)?;
-        self.alpha_g1_beta_g2.write(&mut writer)?;
         self.gamma_g2_neg_pc.write(&mut writer)?;
-        self.delta_g2_neg_pc.write(&mut writer)?;
         Ok(())
     }
 }
@@ -129,7 +137,7 @@ impl<E: PairingEngine> ToBytes for PreparedVerifyingKey<E> {
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-/// The prover key for for the Groth16 zkSNARK.
+/// The prover key for for the BPR20 zkSNARK.
 #[derive(Clone, Debug, PartialEq, CanonicalSerialize, CanonicalDeserialize)]
 pub struct ProvingKey<E: PairingEngine> {
     /// The underlying verification key.

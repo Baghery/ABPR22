@@ -5,7 +5,7 @@
 use ark_bls12_381::{Bls12_381, Fr as BlsFr};
 use ark_crypto_primitives::SNARK;
 use ark_ff::{PrimeField, UniformRand};
-use ark_groth16::Groth16;
+use ark_bpr20::BPR20;
 use ark_mnt4_298::{Fr as MNT4Fr, MNT4_298};
 use ark_mnt4_753::{Fr as MNT4BigFr, MNT4_753};
 use ark_mnt6_298::{Fr as MNT6Fr, MNT6_298};
@@ -17,7 +17,7 @@ use ark_relations::{
 use ark_std::ops::Mul;
 
 const NUM_PROVE_REPEATITIONS: usize = 10;
-const NUM_VERIFY_REPEATITIONS: usize = 50;
+const NUM_VERIFY_REPEATITIONS: usize = 100000;
 
 #[derive(Copy)]
 struct DummyCircuit<F: PrimeField> {
@@ -63,7 +63,7 @@ impl<F: PrimeField> ConstraintSynthesizer<F> for DummyCircuit<F> {
     }
 }
 
-macro_rules! groth16_prove_bench {
+macro_rules! bpr20_prove_bench {
     ($bench_name:ident, $bench_field:ty, $bench_pairing_engine:ty) => {
         let rng = &mut ark_std::test_rng();
         let c = DummyCircuit::<$bench_field> {
@@ -73,12 +73,12 @@ macro_rules! groth16_prove_bench {
             num_constraints: 65536,
         };
 
-        let (pk, _) = Groth16::<$bench_pairing_engine>::circuit_specific_setup(c, rng).unwrap();
+        let (pk, _) = BPR20::<$bench_pairing_engine>::circuit_specific_setup(c, rng).unwrap();
 
         let start = ark_std::time::Instant::now();
 
         for _ in 0..NUM_PROVE_REPEATITIONS {
-            let _ = Groth16::<$bench_pairing_engine>::prove(&pk, c.clone(), rng).unwrap();
+            let _ = BPR20::<$bench_pairing_engine>::prove(&pk, c.clone(), rng).unwrap();
         }
 
         println!(
@@ -89,7 +89,7 @@ macro_rules! groth16_prove_bench {
     };
 }
 
-macro_rules! groth16_verify_bench {
+macro_rules! bpr20_verify_bench {
     ($bench_name:ident, $bench_field:ty, $bench_pairing_engine:ty) => {
         let rng = &mut ark_std::test_rng();
         let c = DummyCircuit::<$bench_field> {
@@ -99,15 +99,18 @@ macro_rules! groth16_verify_bench {
             num_constraints: 65536,
         };
 
-        let (pk, vk) = Groth16::<$bench_pairing_engine>::circuit_specific_setup(c, rng).unwrap();
-        let proof = Groth16::<$bench_pairing_engine>::prove(&pk, c.clone(), rng).unwrap();
+        let (pk, vk) = BPR20::<$bench_pairing_engine>::circuit_specific_setup(c, rng).unwrap();
+        let proof = BPR20::<$bench_pairing_engine>::prove(&pk, c.clone(), rng).unwrap();
 
         let v = c.a.unwrap().mul(c.b.unwrap());
 
+        
+        //The preprocessing happens of vk
+        let pvk = BPR20::<$bench_pairing_engine>::process_vk(&vk).unwrap();
+        //Now the counter starts after preprocessing of the vk
         let start = ark_std::time::Instant::now();
-
         for _ in 0..NUM_VERIFY_REPEATITIONS {
-            let _ = Groth16::<$bench_pairing_engine>::verify(&vk, &vec![v], &proof).unwrap();
+            let _ = BPR20::<$bench_pairing_engine>::verify_with_processed_vk(&pvk, &vec![v], &proof).unwrap();
         }
 
         println!(
@@ -119,19 +122,20 @@ macro_rules! groth16_verify_bench {
 }
 
 fn bench_prove() {
-    groth16_prove_bench!(bls, BlsFr, Bls12_381);
-    groth16_prove_bench!(mnt4, MNT4Fr, MNT4_298);
-    groth16_prove_bench!(mnt6, MNT6Fr, MNT6_298);
-    groth16_prove_bench!(mnt4big, MNT4BigFr, MNT4_753);
-    groth16_prove_bench!(mnt6big, MNT6BigFr, MNT6_753);
+    bpr20_prove_bench!(bls, BlsFr, Bls12_381);
+    bpr20_prove_bench!(mnt4, MNT4Fr, MNT4_298);
+    bpr20_prove_bench!(mnt6, MNT6Fr, MNT6_298);
+    bpr20_prove_bench!(mnt4big, MNT4BigFr, MNT4_753);
+    bpr20_prove_bench!(mnt6big, MNT6BigFr, MNT6_753);
 }
 
 fn bench_verify() {
-    groth16_verify_bench!(bls, BlsFr, Bls12_381);
-    groth16_verify_bench!(mnt4, MNT4Fr, MNT4_298);
-    groth16_verify_bench!(mnt6, MNT6Fr, MNT6_298);
-    groth16_verify_bench!(mnt4big, MNT4BigFr, MNT4_753);
-    groth16_verify_bench!(mnt6big, MNT6BigFr, MNT6_753);
+    bpr20_verify_bench!(bls, BlsFr, Bls12_381);
+    bpr20_verify_bench!(mnt4, MNT4Fr, MNT4_298);
+    bpr20_verify_bench!(mnt6, MNT6Fr, MNT6_298);
+    bpr20_verify_bench!(mnt4big, MNT4BigFr, MNT4_753);
+    bpr20_verify_bench!(mnt6big, MNT6BigFr, MNT6_753);
+    
 }
 
 fn main() {

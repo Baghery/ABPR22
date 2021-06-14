@@ -143,9 +143,9 @@ impl<'a, F: Field> ConstraintSynthesizer<F> for MiMCDemo<'a, F> {
 }
 
 #[test]
-fn test_mimc_gm_17() {
-    // We're going to use the Groth-Maller17 proving system.
-    use ark_groth16::{
+fn test_mimc_bpr_20() {
+    // We're going to use the BPR20 proving system.
+    use ark_bpr20::{
         create_random_proof, generate_random_parameters, prepare_verifying_key, verify_proof,
     };
 
@@ -201,7 +201,7 @@ fn test_mimc_gm_17() {
                 constants: &constants,
             };
 
-            // Create a groth16 proof with our parameters.
+            // Create a bpr20 proof with our parameters.
             let proof = create_random_proof(c, &params, rng).unwrap();
             assert!(verify_proof(&pvk, &proof, &[image]).unwrap());
 

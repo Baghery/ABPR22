@@ -27,7 +27,7 @@ use std::{
 use ark_bls12_377::{Bls12_377, Fr};
 
 // We're going to use the Groth 16 proving system.
-use ark_groth16::{
+use ark_bpr20::{
     create_random_proof, generate_random_parameters, prepare_verifying_key, verify_proof,
 };
 

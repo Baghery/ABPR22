@@ -26,7 +26,7 @@ use std::{
 // We're going to use the BLS12-377 pairing-friendly elliptic curve.
 use ark_bls12_377::{Bls12_377, Fr};
 
-// We're going to use the Groth 16 proving system.
+// We're going to use the BPR20 proving system.
 use ark_bpr20::{
     create_random_proof, generate_random_parameters, prepare_verifying_key, verify_proof,
 };
@@ -125,7 +125,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         verifying_avg.subsec_nanos() as f64 / 1_000_000_000f64 + (verifying_avg.as_secs() as f64);
 
     println!(
-        "=== Benchmarking Groth16 with {} constraints: ====",
+        "=== Benchmarking BPR20 with {} constraints: ====",
         num_constraints
     );
     println!("Average setup time: {:?} seconds", setup_avg);

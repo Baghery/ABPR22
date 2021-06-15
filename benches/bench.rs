@@ -17,7 +17,7 @@ use ark_relations::{
 use ark_std::ops::Mul;
 
 const NUM_PROVE_REPEATITIONS: usize = 10;
-const NUM_VERIFY_REPEATITIONS: usize = 100000;
+const NUM_VERIFY_REPEATITIONS: usize = 1000;
 
 #[derive(Copy)]
 struct DummyCircuit<F: PrimeField> {
@@ -131,6 +131,7 @@ fn bench_prove() {
 
 fn bench_verify() {
     bpr20_verify_bench!(bls, BlsFr, Bls12_381);
+    
     bpr20_verify_bench!(mnt4, MNT4Fr, MNT4_298);
     bpr20_verify_bench!(mnt6, MNT6Fr, MNT6_298);
     bpr20_verify_bench!(mnt4big, MNT4BigFr, MNT4_753);

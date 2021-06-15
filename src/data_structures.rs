@@ -64,6 +64,12 @@ pub struct VerifyingKey<E: PairingEngine> {
     pub alpha_g1_beta_g2: E::Fqk,
     /// The element `e((zt*gamma^{-1}) * G, delta * H)` in `E::GT` which is equal to [zt]_E::GT.
     pub zt_gt: E::Fqk,
+    /// The `kappa_zt * e(G,H)`, where `G` is the generator of `E::G1` and  `H` is the generator of `E::G2`.
+    pub kappa_zt_gt: E::Fqk,
+    /// The `(kappa*zt*delta^{-1}) * G`, where `G` is the generator of `E::G1`.
+    pub g1_kappa_zt_deltainverse: E::G1Affine,
+    /// The `(kappa*zt*delta^{-1}) * G`, where `G` is the generator of `E::G1`.
+    pub g1_zt_deltainverse: E::G1Affine,
 }
 
 impl<E: PairingEngine> ToBytes for VerifyingKey<E> {
@@ -77,6 +83,7 @@ impl<E: PairingEngine> ToBytes for VerifyingKey<E> {
         }
         self.alpha_g1_beta_g2.write(&mut writer)?;
         self.zt_gt.write(&mut writer)?;
+        self.kappa_zt_gt.write(&mut writer)?;
         Ok(())
     }
 }
@@ -91,6 +98,9 @@ impl<E: PairingEngine> Default for VerifyingKey<E> {
             gamma_abc_g1: Vec::new(),
             alpha_g1_beta_g2: E::Fqk::default(),
             zt_gt: E::Fqk::default(),
+            g1_kappa_zt_deltainverse: E::G1Affine::default(),
+            kappa_zt_gt: E::Fqk::default(),
+            g1_zt_deltainverse: E::G1Affine::default(),
         }
     }
 }

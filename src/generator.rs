@@ -25,6 +25,7 @@ where
     let beta = E::Fr::rand(rng);
     let gamma = E::Fr::rand(rng);
     let delta = E::Fr::rand(rng);
+    let kappa = E::Fr::rand(rng);
 
     let g1_generator = E::G1Projective::rand(rng);
     let g2_generator = E::G2Projective::rand(rng);
@@ -35,6 +36,7 @@ where
         beta,
         gamma,
         delta,
+        kappa,
         g1_generator,
         g2_generator,
         rng,
@@ -48,6 +50,7 @@ pub fn generate_parameters<E, C, R>(
     beta: E::Fr,
     gamma: E::Fr,
     delta: E::Fr,
+    kappa: E::Fr,
     g1_generator: E::G1Projective,
     g2_generator: E::G2Projective,
     rng: &mut R,
@@ -175,6 +178,11 @@ where
     let g1_zt_deltainverse = h_query[0];
     end_timer!(h_time);
 
+    let tmp = h_query[0];
+    //let zt_gt = E::pairing(tmp, delta_g2);
+    let g1_kappa_zt_deltainverse = tmp.mul(kappa.into());
+    let kappa_zt_gt = E::pairing(g1_kappa_zt_deltainverse, delta_g2);
+
     // Compute the L-query
     let l_time = start_timer!(|| "Calculate L");
     let l_query = FixedBaseMSM::multi_scalar_mul::<E::G1Projective>(
@@ -210,6 +218,9 @@ where
         gamma_abc_g1: E::G1Projective::batch_normalization_into_affine(&gamma_abc_g1),
         alpha_g1_beta_g2: E::pairing(alpha_g1, beta_g2),
         zt_gt: E::pairing(g1_zt_deltainverse, delta_g2),
+        kappa_zt_gt: kappa_zt_gt,
+        g1_kappa_zt_deltainverse: g1_kappa_zt_deltainverse.into_affine(),
+        g1_zt_deltainverse: g1_zt_deltainverse.into_affine(),
     };
 
     let batch_normalization_time = start_timer!(|| "Convert proving key elements to affine");

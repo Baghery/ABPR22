@@ -32,7 +32,7 @@ where
     while zeta.is_zero(){
         zeta = E::Fr::rand(rng);
     }
-
+    
     create_proof::<E, C>(circuit, pk, r, s, zeta)
 }
 
@@ -162,6 +162,8 @@ where
 
     end_timer!(prover_time);
     
+    //Hashing part
+   
     let hash = Blake2b::new()
     .chain(to_bytes!(&g_a.into_affine()).unwrap())
     .chain(to_bytes!(&g2_b.into_affine()).unwrap())
@@ -171,18 +173,19 @@ where
     output.copy_from_slice(&hash.finalize());
     
     let m_fr = E::Fr::from_le_bytes_mod_order(&output);
-    //println!("m_fr prover {0}", m_fr);
+
     //Computing [D]_1
-    let zt = pk.h_query[0];
-    let mul_factor = (zeta + m_fr).inverse().unwrap();
-    let d = zt.clone().mul(mul_factor).into_affine();
+    let zt_delta_inv = pk.h_query[0];
+    let mul_factor2 = (zeta + m_fr).inverse().unwrap();
+    let mul_factor1 = mul_factor2*m_fr;
+    let d = zt_delta_inv.mul(mul_factor1) + pk.vk.g1_kappa_zt_deltainverse.mul(mul_factor2);
 
     Ok(Proof {
         a: g_a.into_affine(),
         b: g2_b.into_affine(),
         c: g_c.into_affine(),
         delta_prime: delta_prime_g2,
-        d: d,
+        d: d.into_affine(),
     })
 }
 

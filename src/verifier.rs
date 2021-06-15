@@ -50,13 +50,12 @@ pub fn verify_proof_with_prepared_inputs<E: PairingEngine>(
                 prepared_inputs.into_affine().into(),
                 pvk.gamma_g2_neg_pc.clone(),
             ),
-            (proof.c.into(), proof.delta_prime.neg().into()),
+            (proof.c.into(), proof.delta_prime.clone().neg().into()),
         ]
         .iter(),
     );
 
     let test = E::final_exponentiation(&qap).ok_or(SynthesisError::UnexpectedIdentity)?;
-
 
     let hash = Blake2b::new()
     .chain(to_bytes!(&proof.a).unwrap())
@@ -67,13 +66,27 @@ pub fn verify_proof_with_prepared_inputs<E: PairingEngine>(
     output.copy_from_slice(&hash.finalize());
 
     let m_fr = E::Fr::from_le_bytes_mod_order(&output);
-    //println!("m_fr verifier {0}", m_fr);
-    let mut delta_prime_delta_m = pvk.vk.delta_g2.mul(m_fr);
-    delta_prime_delta_m.add_assign_mixed(&proof.delta_prime);
 
-    let test2 = E::pairing(proof.d, delta_prime_delta_m.into_affine());
+    let tmp1 = pvk.vk.delta_g2.clone().mul(m_fr);
+    let delta_prime_delta_m = proof.delta_prime + tmp1.into_affine();
+    //let test2 = E::pairing(proof.d, delta_prime_delta_m);
+    
+    
+    //TODO: Use cyclotomic_exp instead of pow and see if there is any noticable gains in terms of speed
+    //let target_elem1 = pvk.vk.zt_gt.pow(m_fr.into());
+    
+    let tmp2 = pvk.vk.g1_zt_deltainverse.mul(m_fr);
+    let qap2 = E::miller_loop(
+        [
+            (proof.d.into(), delta_prime_delta_m.into()),
+            (tmp2.into_affine().into() , pvk.vk.delta_g2.neg().into()),
+        ]
+        .iter(),
+    );
 
-    Ok((test == pvk.vk.alpha_g1_beta_g2) && (test2 == pvk.vk.zt_gt))
+    let test2 = E::final_exponentiation(&qap2).ok_or(SynthesisError::UnexpectedIdentity)?;
+    
+    Ok((test == pvk.vk.alpha_g1_beta_g2) && (test2 == pvk.vk.kappa_zt_gt))
 }
 
 /// Verify a proof `proof` against the prepared verification key `pvk`,

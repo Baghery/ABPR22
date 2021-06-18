@@ -1,5 +1,5 @@
 use ark_ec::{AffineCurve, PairingEngine, ProjectiveCurve};
-use ark_ff::{PrimeField, to_bytes};
+use ark_ff::{PrimeField, to_bytes,One,Zero};
 
 use super::{PreparedVerifyingKey, Proof, VerifyingKey};
 
@@ -56,7 +56,7 @@ pub fn verify_proof_with_prepared_inputs<E: PairingEngine>(
     );
 
     let test = E::final_exponentiation(&qap).ok_or(SynthesisError::UnexpectedIdentity)?;
-
+    
 
     let hash = Blake2b::new()
     .chain(to_bytes!(&proof.a).unwrap())
@@ -66,14 +66,30 @@ pub fn verify_proof_with_prepared_inputs<E: PairingEngine>(
     let mut output = [0u8; 64];
     output.copy_from_slice(&hash.finalize());
 
-    let m_fr = E::Fr::from_le_bytes_mod_order(&output);
-    //println!("m_fr verifier {0}", m_fr);
-    let mut delta_prime_delta_m = pvk.vk.delta_g2.mul(m_fr);
-    delta_prime_delta_m.add_assign_mixed(&proof.delta_prime);
-
-    let test2 = E::pairing(proof.d, delta_prime_delta_m.into_affine());
-
-    Ok((test == pvk.vk.alpha_g1_beta_g2) && (test2 == pvk.vk.zt_gt))
+    let mut i = 0;
+    //let mut y_s = delta_prime_g1.clone();
+    loop{
+        if let Some(point) = E::G1Affine::from_random_bytes(&output) 
+        {
+            let y_s = point;
+            let qap2 = E::miller_loop(
+                [
+                    (y_s.into(), proof.delta_prime.into()),
+                    (proof.z.into(), pvk.vk.delta_g2.neg().into()),
+                ]
+                .iter(),
+            );
+        
+            let test2 = E::final_exponentiation(&qap2).ok_or(SynthesisError::UnexpectedIdentity)?;
+            return Ok((test == pvk.vk.alpha_g1_beta_g2) && (test2.is_one()))
+            
+        }else{
+            output[i] = 0;
+            i+=1;
+            
+        }
+    }
+    
 }
 
 /// Verify a proof `proof` against the prepared verification key `pvk`,

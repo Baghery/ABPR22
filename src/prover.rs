@@ -170,20 +170,31 @@ where
     let mut output = [0u8; 64];
     output.copy_from_slice(&hash.finalize());
     
-    let m_fr = E::Fr::from_le_bytes_mod_order(&output);
-    //println!("m_fr prover {0}", m_fr);
-    //Computing [D]_1
-    let zt = pk.h_query[0];
-    let mul_factor = (zeta + m_fr).inverse().unwrap();
-    let d = zt.clone().mul(mul_factor).into_affine();
+    
+    let mut i = 0;
+    
+    
+    loop{
+        if let Some(point) = E::G1Affine::from_random_bytes(&output) 
+        {
+            let y_s = point;
+            let z = y_s.mul(zeta.into());
+            return Ok(Proof {
+                a: g_a.into_affine(),
+                b: g2_b.into_affine(),
+                c: g_c.into_affine(),
+                delta_prime: delta_prime_g2,
+                z: z.into_affine(),
+            })
+            
+        }else{
+            output[i] = 0;
+            i+=1;
+            
+        }
+    }
 
-    Ok(Proof {
-        a: g_a.into_affine(),
-        b: g2_b.into_affine(),
-        c: g_c.into_affine(),
-        delta_prime: delta_prime_g2,
-        d: d,
-    })
+    
 }
 
 

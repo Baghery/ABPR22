@@ -182,6 +182,7 @@ where
     //let zt_gt = E::pairing(tmp, delta_g2);
     let g1_kappa_zt_deltainverse = tmp.mul(kappa.into());
     let kappa_zt_gt = E::pairing(g1_kappa_zt_deltainverse, delta_g2);
+    
 
     // Compute the L-query
     let l_time = start_timer!(|| "Calculate L");

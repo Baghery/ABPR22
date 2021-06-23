@@ -48,7 +48,7 @@ Unless you explicitly state otherwise, any contribution submitted for inclusion 
 ## Acknowledgements
 
 This work was supported by:
-the Defense Advanced Research Projects Agency (DARPA) under Contract No. HR001120C0085,
+the Defense Advanced Research Projects Agency (DARPA) under Contract No. HR001120C0085;
 a Google Faculty Award;
 the National Science Foundation;
 the UC Berkeley Center for Long-Term Cybersecurity;

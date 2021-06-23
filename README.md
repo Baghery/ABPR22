@@ -7,7 +7,7 @@
     <a href="https://deps.rs/repo/github/arkworks-rs/groth16"><img src="https://deps.rs/repo/github/arkworks-rs/groth16/status.svg"></a>
 </p>
 
-The arkworks ecosystem consist of Rust libraries for designing and working with __zero knowledge succinct non-interactive arguments (zkSNARKs)__. This repository contains an efficient implementation of the simulation extractable zk-SNARK published in CANS20 paper [[BPR20]](https://link.springer.com/chapter/10.1007/978-3-030-65411-5_22) which is also avalable in Section 4 of [[BPR20]](https://eprint.iacr.org/2020/1306), and is done by Oussama Amine (University of Oslo) and Karim Baghery (KU Leuven).
+The arkworks ecosystem consist of Rust libraries for designing and working with __zero knowledge succinct non-interactive arguments (zkSNARKs)__. This repository contains an efficient implementation of the simulation extractable zk-SNARK published in CANS20 paper [[BPR20a]](https://link.springer.com/chapter/10.1007/978-3-030-65411-5_22) which is also avalable in Section 4 of [[BPR20b]](https://eprint.iacr.org/2020/1306), and is done by Oussama Amine (University of Oslo) and Karim Baghery (KU Leuven).
 
 This library is released under the MIT License and the Apache v2 License (see [License](#license)).
 

@@ -16,7 +16,7 @@ use ark_relations::{
 };
 use ark_std::ops::Mul;
 
-const NUM_PROVE_REPEATITIONS: usize = 10;
+const NUM_PROVE_REPEATITIONS: usize = 100;
 const NUM_VERIFY_REPEATITIONS: usize = 100000;
 
 #[derive(Copy)]
@@ -105,13 +105,19 @@ macro_rules! bpr20_verify_bench {
         let v = c.a.unwrap().mul(c.b.unwrap());
 
         
-        //The preprocessing happens of vk
-        let pvk = BPR20::<$bench_pairing_engine>::process_vk(&vk).unwrap();
-        //Now the counter starts after preprocessing of the vk
+     //  //The preprocessing happens of vk
+     //   let pvk = BPR20::<$bench_pairing_engine>::process_vk(&vk).unwrap();
+     //   //Now the counter starts after preprocessing of the vk
+     //   let start = ark_std::time::Instant::now();
+     //   for _ in 0..NUM_VERIFY_REPEATITIONS {
+     //       let _ = BPR20::<$bench_pairing_engine>::verify_with_processed_vk(&pvk, &vec![v], &proof).unwrap();
+     //   }
+
         let start = ark_std::time::Instant::now();
+
         for _ in 0..NUM_VERIFY_REPEATITIONS {
-            let _ = BPR20::<$bench_pairing_engine>::verify_with_processed_vk(&pvk, &vec![v], &proof).unwrap();
-        }
+            let _ = BPR20::<$bench_pairing_engine>::verify(&vk, &vec![v], &proof).unwrap();
+}
 
         println!(
             "verifying time for {}: {} ns",

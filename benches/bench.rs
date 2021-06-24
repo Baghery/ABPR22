@@ -103,8 +103,7 @@ macro_rules! bpr20_verify_bench {
         let proof = BPR20::<$bench_pairing_engine>::prove(&pk, c.clone(), rng).unwrap();
 
         let v = c.a.unwrap().mul(c.b.unwrap());
-
-        
+     
      //  //The preprocessing happens of vk
      //   let pvk = BPR20::<$bench_pairing_engine>::process_vk(&vk).unwrap();
      //   //Now the counter starts after preprocessing of the vk

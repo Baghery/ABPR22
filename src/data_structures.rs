@@ -6,6 +6,8 @@ use ark_std::{
     vec::Vec,
 };
 
+
+
 /// A proof in the BPR20 SNARK.
 #[derive(Clone, Debug, PartialEq, CanonicalSerialize, CanonicalDeserialize)]
 pub struct Proof<E: PairingEngine> {

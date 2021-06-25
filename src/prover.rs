@@ -1,5 +1,5 @@
 use crate::{r1cs_to_qap::R1CStoQAP, Proof, ProvingKey};
-use ark_ec::{msm::VariableBaseMSM, AffineCurve, PairingEngine, ProjectiveCurve};
+use ark_ec::{msm::VariableBaseMSM,msm::FixedBaseMSM, AffineCurve, PairingEngine, ProjectiveCurve};
 use ark_ff::{Field, PrimeField, UniformRand, Zero, One, to_bytes};
 use ark_poly::GeneralEvaluationDomain;
 use ark_relations::r1cs::{
@@ -177,6 +177,8 @@ where
     let mul_factor = (zeta + m_fr).inverse().unwrap();
     let d = zt.clone().mul(mul_factor).into_affine();
 
+    
+    
     Ok(Proof {
         a: g_a.into_affine(),
         b: g2_b.into_affine(),

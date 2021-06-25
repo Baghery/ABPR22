@@ -95,4 +95,6 @@ impl<E: PairingEngine> SNARK<E::Fr> for BPR20<E> {
     }
 }
 
+
+
 impl<E: PairingEngine> CircuitSpecificSetupSNARK<E::Fr> for BPR20<E> {}

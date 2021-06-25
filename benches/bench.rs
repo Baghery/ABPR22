@@ -114,10 +114,10 @@ macro_rules! bpr20_verify_bench {
         // }
 
         let start = ark_std::time::Instant::now();
-
+        let pvk = BPR20::<$bench_pairing_engine>::process_vk(&vk).unwrap();
         for _ in 0..NUM_VERIFY_REPEATITIONS {
-            let _ = BPR20::<$bench_pairing_engine>::verify(&vk, &vec![v], &proof).unwrap();
-}
+            let _ = BPR20::<$bench_pairing_engine>::verify_with_processed_vk(&pvk, &vec![v], &proof).unwrap();
+        }
 
         println!(
             "verifying time for {}: {} ns",

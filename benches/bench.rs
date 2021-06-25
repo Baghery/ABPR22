@@ -17,18 +17,11 @@ use ark_relations::{
 };
 use ark_std::ops::Mul;
 
-use ark_bpr20::{PreparedVerifyingKey, Proof, VerifyingKey, Vec_verify_proof};
-use std::thread;
-use easy_parallel::Parallel;
-use ark_std::rand::{
-    distributions::{Distribution, Uniform},
-    rngs::StdRng,
-    Rng,
-};
+use ark_bpr20::{PreparedVerifyingKey, Proof, VerifyingKey, vec_verify_proof};
 
 const NUM_PROVE_REPEATITIONS: usize = 10;
-const NUM_VERIFY_REPEATITIONS: usize = 100;
-const NUM_PROVE_REPEATITIONS_BATCHED: usize = 1000;
+const NUM_VERIFY_REPEATITIONS: usize = 20;
+const NUM_PROVE_REPEATITIONS_AGG: usize = 1000;
 
 #[derive(Copy)]
 struct DummyCircuit<F: PrimeField> {
@@ -102,44 +95,37 @@ macro_rules! bpr20_prove_bench {
 
 macro_rules! bpr20_verify_bench {
     ($bench_name:ident, $bench_field:ty, $bench_pairing_engine:ty) => {
-        let mut rng = &mut ark_std::test_rng();
+        let rng = &mut ark_std::test_rng();
         let c = DummyCircuit::<$bench_field> {
             a: Some(<$bench_field>::rand(rng)),
             b: Some(<$bench_field>::rand(rng)),
             num_variables: 10,
-            num_constraints: 65536,
+            num_constraints: 256,
         };
-        let mut proofs: Vec<Proof<Bls12_381>> = Vec::with_capacity(NUM_PROVE_REPEATITIONS_BATCHED as usize);
+        let mut proofs: Vec<Proof<_>> = Vec::with_capacity(NUM_PROVE_REPEATITIONS_AGG as usize);
         let (pk, vk) = BPR20::<$bench_pairing_engine>::circuit_specific_setup(c, rng).unwrap();
         // BATCHED -> AGGERAGATED 
-        for _ in 0..NUM_PROVE_REPEATITIONS_BATCHED {
+        for _ in 0..NUM_PROVE_REPEATITIONS_AGG {
             proofs.push(BPR20::<$bench_pairing_engine>::prove(&pk, c.clone(), rng).unwrap());
         }
 
 
-        //let proof = BPR20::<$bench_pairing_engine>::prove(&pk, c.clone(), rng).unwrap();
-
         let v = c.a.unwrap().mul(c.b.unwrap());
-
-   
-        
-
-        //Vec_verify_proof::<Bls12_381>(&pvk, &proofs, &vec![v]).unwrap();
 
         //Now the counter starts  
         let start = ark_std::time::Instant::now();
         //The preprocessing happens of vk
         let pvk = BPR20::<$bench_pairing_engine>::process_vk(&vk).unwrap();
         for p in 0..NUM_VERIFY_REPEATITIONS {
-            //let _ = BPR20::<$bench_pairing_engine>::verify_with_processed_vk(&pvk, &vec![v], &proof).unwrap();
+            
             println!("loop number {:?} in verification loops", p);
-            Vec_verify_proof::<Bls12_381>(&pvk, &proofs, &vec![v]).unwrap();
+            vec_verify_proof::<$bench_pairing_engine>(&pvk, &proofs, &vec![v]).unwrap();
         }
 
         println!(
             "verifying time for {}: {} ns",
             stringify!($bench_pairing_engine),
-            start.elapsed().as_nanos() / NUM_VERIFY_REPEATITIONS as u128 / NUM_PROVE_REPEATITIONS_BATCHED as u128
+            start.elapsed().as_nanos() / NUM_VERIFY_REPEATITIONS as u128 / NUM_PROVE_REPEATITIONS_AGG as u128
         );
     };
 }
@@ -158,12 +144,13 @@ fn bench_prove() {
 
 fn bench_verify() {
     bpr20_verify_bench!(bls, BlsFr, Bls12_381);
-    /*
+    
     bpr20_verify_bench!(mnt4, MNT4Fr, MNT4_298);
+    
     bpr20_verify_bench!(mnt6, MNT6Fr, MNT6_298);
     bpr20_verify_bench!(mnt4big, MNT4BigFr, MNT4_753);
     bpr20_verify_bench!(mnt6big, MNT6BigFr, MNT6_753);
-    */
+    
     
 }
 

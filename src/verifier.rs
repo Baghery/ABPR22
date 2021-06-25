@@ -93,7 +93,7 @@ pub fn verify_proof<E: PairingEngine>(
 /// Verify a proof `proof` against the prepared verification key `pvk` and prepared public
 /// inputs. This should be preferred over [`verify_proof`] if the instance's public inputs are
 /// known in advance.
-pub fn Vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
+pub fn vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
     pvk: &PreparedVerifyingKey<E>,
     proofs: &Vec<Proof<E>>,
     prepared_inputs: &E::G1Projective,
@@ -129,31 +129,13 @@ pub fn Vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
     
     let elem_g2 =
         FixedBaseMSM::multi_scalar_mul::<E::G2Projective>(scalar_bits, delta_g2_window, &delta_g2_table, &m_fr);
-    //println!("MSM is {:?}", elem_g2);
     
-    //println!("m_fr verifier {0}", m_fr);
+        
+
     //let mut delta_prime_delta_m = pvk.vk.delta_g2.mul(m_fr);
 
 
-    //Now we have to iterate through elem_g2 with cfg! and use zip in order to perform the next line, and possibly the tests as well
-    //delta_prime_delta_m.add_assign_mixed(&proof.delta_prime);
-
-    /*
-    let non_zero_b: usize = cfg_into_iter!(0..qap_num_variables)
-        .map(|i| usize::from(!b[i].is_zero()))
-        .sum();
-
-    let scalar_bits = E::Fr::size_in_bits();
-
-    let gamma_inverse = gamma.inverse().ok_or(SynthesisError::UnexpectedIdentity)?;
-    let delta_inverse = delta.inverse().ok_or(SynthesisError::UnexpectedIdentity)?;
-    let result = cfg_iter!(elem_g2)
-        .zip(&[proof.delta_prime;4].to_vec())
-        .map(|(a,b)| a.add_assign_mixed(&b))
-        .collect::<Vec<_>>();
-    */
-
-    
+   
 /*
     let test = E::final_exponentiation(&E::miller_loop(
         [
@@ -170,8 +152,10 @@ pub fn Vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
     */
 
     let iterator = elem_g2.iter();
-    let result = iterator.zip(proofs).map(|(x,y)|  (E::pairing(y.d,(*x + y.delta_prime.into_projective()).into_affine())== pvk.vk.zt_gt) 
-    && (E::final_exponentiation(&E::miller_loop(
+    let result = iterator.zip(proofs).map(|(x,y)|  
+    (E::pairing(y.d,(*x + y.delta_prime.into_projective()).into_affine())== pvk.vk.zt_gt) 
+    && 
+    (E::final_exponentiation(&E::miller_loop(
         [
             (y.a.into(), y.b.into()),
             (
@@ -181,7 +165,11 @@ pub fn Vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
             (y.c.into(), y.delta_prime.neg().into()),
         ]
         .iter(),
-    )).unwrap() == pvk.vk.alpha_g1_beta_g2)).collect::<Vec<_>>();
+    )).
+    unwrap() == pvk.vk.alpha_g1_beta_g2)).
+    fold(true, |total, next| {total && next});
+    
+    
     //println!("result is {:?}", result);
     //let test2 = E::pairing(proof.d, delta_prime_delta_m.into_affine());
 
@@ -202,16 +190,16 @@ pub fn Vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
 
     Ok((test == pvk.vk.alpha_g1_beta_g2) && (test2 == pvk.vk.zt_gt))
     */
-    Ok(true)
+    Ok(result)
 }
 
 /// Verify a proof `proof` against the prepared verification key `pvk`,
 /// with respect to the instance `public_inputs`.
-pub fn Vec_verify_proof<E: PairingEngine>(
+pub fn vec_verify_proof<E: PairingEngine>(
     pvk: &PreparedVerifyingKey<E>,
     proofs: &Vec<Proof<E>>,
     public_inputs: &[E::Fr],
 ) -> R1CSResult<bool> {
     let prepared_inputs = prepare_inputs(pvk, public_inputs)?;
-    Vec_verify_proof_with_prepared_inputs(pvk, proofs, &prepared_inputs)
+    vec_verify_proof_with_prepared_inputs(pvk, proofs, &prepared_inputs)
 }

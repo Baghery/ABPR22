@@ -2,6 +2,8 @@
 //     RAYON_NUM_THREADS=N cargo bench --no-default-features --features "std parallel" -- --nocapture
 // where N is the number of threads you want to use (N = 1 for single-thread).
 
+use ark_bpr20::Proof;
+use ark_bpr20::vec_verify_proof;
 use ark_bls12_381::{Bls12_381, Fr as BlsFr};
 use ark_crypto_primitives::SNARK;
 use ark_ff::{PrimeField, UniformRand};
@@ -17,7 +19,8 @@ use ark_relations::{
 use ark_std::ops::Mul;
 
 const NUM_PROVE_REPEATITIONS: usize = 100;
-const NUM_VERIFY_REPEATITIONS: usize = 100000;
+const NUM_VERIFY_REPEATITIONS: usize = 1;
+const NUM_PROVE_REPEATITIONS_AGG: usize = 100000;
 
 #[derive(Copy)]
 struct DummyCircuit<F: PrimeField> {
@@ -127,6 +130,45 @@ macro_rules! bpr20_verify_bench {
     };
 }
 
+///
+macro_rules! bpr20_verify_bench_vec {
+    ($bench_name:ident, $bench_field:ty, $bench_pairing_engine:ty) => {
+        let rng = &mut ark_std::test_rng();
+        let c = DummyCircuit::<$bench_field> {
+            a: Some(<$bench_field>::rand(rng)),
+            b: Some(<$bench_field>::rand(rng)),
+            num_variables: 10,
+            num_constraints: 32,
+        };
+        let mut proofs: Vec<Proof<_>> = Vec::with_capacity(NUM_PROVE_REPEATITIONS_AGG as usize);
+        let (pk, vk) = BPR20::<$bench_pairing_engine>::circuit_specific_setup(c, rng).unwrap();
+        
+        
+        for _ in 0..NUM_PROVE_REPEATITIONS_AGG {
+            proofs.push(BPR20::<$bench_pairing_engine>::prove(&pk, c.clone(), rng).unwrap());
+        }
+
+
+        let v = c.a.unwrap().mul(c.b.unwrap());
+
+        //Now the counter starts  
+        let start = ark_std::time::Instant::now();
+        //The preprocessing happens of vk
+        let pvk = BPR20::<$bench_pairing_engine>::process_vk(&vk).unwrap();
+        for p in 0..NUM_VERIFY_REPEATITIONS {
+            
+            println!("loop number {:?} in verification loops", p);
+            vec_verify_proof::<$bench_pairing_engine>(&pvk, &proofs, &vec![v]).unwrap();
+        }
+
+        println!(
+            "verifying time for {}: {} ns",
+            stringify!($bench_pairing_engine),
+            start.elapsed().as_nanos() / NUM_VERIFY_REPEATITIONS as u128 / NUM_PROVE_REPEATITIONS_AGG as u128
+        );
+    };
+}
+
 fn bench_prove() {
     bpr20_prove_bench!(bls, BlsFr, Bls12_381);
     bpr20_prove_bench!(mnt4, MNT4Fr, MNT4_298);
@@ -136,16 +178,25 @@ fn bench_prove() {
 }
 
 fn bench_verify() {
-    bpr20_verify_bench!(bls, BlsFr, Bls12_381);
     
+    //bpr20_verify_bench!(bls, BlsFr, Bls12_381);
+    /*
     bpr20_verify_bench!(mnt4, MNT4Fr, MNT4_298);
     bpr20_verify_bench!(mnt6, MNT6Fr, MNT6_298);
     bpr20_verify_bench!(mnt4big, MNT4BigFr, MNT4_753);
     bpr20_verify_bench!(mnt6big, MNT6BigFr, MNT6_753);
+    */
+    bpr20_verify_bench_vec!(bls, BlsFr, Bls12_381);
+    /*
+    bpr20_verify_bench_vec!(mnt4, MNT4Fr, MNT4_298);
+    bpr20_verify_bench_vec!(mnt6, MNT6Fr, MNT6_298);
+    bpr20_verify_bench_vec!(mnt4big, MNT4BigFr, MNT4_753);
+    bpr20_verify_bench_vec!(mnt6big, MNT6BigFr, MNT6_753);
+    */
     
 }
 
 fn main() {
-    bench_prove();
+    //bench_prove();
     bench_verify();
 }

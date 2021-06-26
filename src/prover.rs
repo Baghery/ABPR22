@@ -162,19 +162,20 @@ where
 
     end_timer!(prover_time);
     
-    let hash = Blake2b::new()
-    .chain(to_bytes!(&g_a.into_affine()).unwrap())
-    .chain(to_bytes!(&g2_b.into_affine()).unwrap())
-    .chain(to_bytes!(&g_c.into_affine()).unwrap())
-    .chain(to_bytes!(&delta_prime_g2).unwrap());
-    let mut output = [0u8; 64];
-    output.copy_from_slice(&hash.finalize());
-    
-    
+
     let mut i = 0;
     
     
     loop{
+
+        let hash = Blake2b::new()
+        .chain([i as u8;1])
+        .chain(to_bytes!(&g_a.into_affine()).unwrap())
+        .chain(to_bytes!(&g2_b.into_affine()).unwrap())
+        .chain(to_bytes!(&g_c.into_affine()).unwrap())
+        .chain(to_bytes!(&delta_prime_g2).unwrap());
+        let mut output = [0u8; 64];
+        output.copy_from_slice(&hash.finalize());
         if let Some(point) = E::G1Affine::from_random_bytes(&output) 
         {
             let y_s = point;
@@ -188,9 +189,7 @@ where
             })
             
         }else{
-            output[i] = 0;
-            i+=1;
-            
+            i+=1; 
         }
     }
 

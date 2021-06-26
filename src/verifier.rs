@@ -1,5 +1,5 @@
 use ark_ec::{AffineCurve, PairingEngine, ProjectiveCurve};
-use ark_ff::{PrimeField, to_bytes,One,Zero};
+use ark_ff::{PrimeField, to_bytes,One};
 
 use super::{PreparedVerifyingKey, Proof, VerifyingKey};
 
@@ -57,18 +57,18 @@ pub fn verify_proof_with_prepared_inputs<E: PairingEngine>(
 
     let test = E::final_exponentiation(&qap).ok_or(SynthesisError::UnexpectedIdentity)?;
     
-
-    let hash = Blake2b::new()
-    .chain(to_bytes!(&proof.a).unwrap())
-    .chain(to_bytes!(&proof.b).unwrap())
-    .chain(to_bytes!(&proof.c).unwrap())
-    .chain(to_bytes!(&proof.delta_prime).unwrap());
-    let mut output = [0u8; 64];
-    output.copy_from_slice(&hash.finalize());
-
     let mut i = 0;
-    //let mut y_s = delta_prime_g1.clone();
+    
     loop{
+        let hash = Blake2b::new()
+        .chain([i as u8;1])
+        .chain(to_bytes!(&proof.a).unwrap())
+        .chain(to_bytes!(&proof.b).unwrap())
+        .chain(to_bytes!(&proof.c).unwrap())
+        .chain(to_bytes!(&proof.delta_prime).unwrap());
+        let mut output = [0u8; 64];
+        output.copy_from_slice(&hash.finalize());
+
         if let Some(point) = E::G1Affine::from_random_bytes(&output) 
         {
             let y_s = point;
@@ -84,9 +84,7 @@ pub fn verify_proof_with_prepared_inputs<E: PairingEngine>(
             return Ok((test == pvk.vk.alpha_g1_beta_g2) && (test2.is_one()))
             
         }else{
-            output[i] = 0;
             i+=1;
-            
         }
     }
     

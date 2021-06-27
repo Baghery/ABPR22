@@ -1,12 +1,12 @@
 use ark_ec::msm::FixedBaseMSM;
 use ark_ec::{AffineCurve, PairingEngine, ProjectiveCurve};
-use ark_ff::{PrimeField,BigInteger, FpParameters, to_bytes, Field, One, };
+use ark_ff::{PrimeField, to_bytes, Field,};
 
 use super::{PreparedVerifyingKey, Proof, VerifyingKey};
 
 use ark_relations::r1cs::{Result as R1CSResult, SynthesisError};
 
-use core::ops::{AddAssign, Neg,MulAssign};
+use core::ops::{AddAssign, Neg};
 
 use blake2::{Blake2b, Digest};
 use ark_std::{vec::Vec};
@@ -173,132 +173,4 @@ pub fn vec_verify_proof<E: PairingEngine>(
 ) -> R1CSResult<bool> {
     let prepared_inputs = prepare_inputs(pvk, public_inputs)?;
     vec_verify_proof_with_prepared_inputs(pvk, proofs, &prepared_inputs)
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-///Doc
-pub fn get_mul_window_size(num_scalars: usize) -> usize {
-    if num_scalars < 32 {
-        3
-    } else {
-        ln_without_floats(num_scalars)
-    }
-}
-
-fn ln_without_floats(a: usize) -> usize {
-    // log2(a) * ln(2)
-    (ark_std::log2(a) * 69 / 100) as usize
-}
-
-///doc
-pub fn gt_get_window_table<E: PairingEngine>(
-    scalar_size: usize,
-    window: usize,
-    g: E::Fqk,
-) -> Vec<Vec<E::Fqk>> {
-    let in_window = 1 << window;
-    let outerc = (scalar_size + window - 1) / window;
-    let last_in_window = 1 << (scalar_size - (outerc - 1) * window);
-
-    let mut multiples_of_g = vec![vec![E::Fqk::one(); in_window]; outerc];
-
-    let mut g_outer = g;
-    let mut g_outers = Vec::with_capacity(outerc);
-    for _ in 0..outerc {
-        g_outers.push(g_outer);
-        for _ in 0..window {
-            g_outer.double_in_place();
-        }
-    }
-    //cfg_iter_mut!(multiples_of_g)
-    multiples_of_g.iter_mut()
-        .enumerate()
-        .take(outerc)
-        .zip(g_outers)
-        .for_each(|((outer, multiples_of_g), g_outer)| {
-            let cur_in_window = if outer == outerc - 1 {
-                last_in_window
-            } else {
-                in_window
-            };
-
-            let mut g_inner = E::Fqk::one();
-            for inner in multiples_of_g.iter_mut().take(cur_in_window) {
-                *inner = g_inner;
-                g_inner += &g_outer;
-            }
-        });
-        multiples_of_g
-
-        /*
-    cfg_iter!(multiples_of_g)
-        .map(|s| T::batch_normalization_into_affine(&s))
-        .collect()
-        */
-}
-
-///doc
-pub fn gt_windowed_mul<E: PairingEngine>(
-    outerc: usize,
-    window: usize,
-    multiples_of_g: &[Vec<E::Fqk>],
-    scalar: &E::Fr,
-) -> E::Fqk {
-    let modulus_size = <E::Fr as PrimeField>::Params::MODULUS_BITS as usize;
-    let scalar_val = scalar.into_repr().to_bits_le();
-    //let scalar_val = scalar.into_repr();
-
-    //let mut res = multiples_of_g[0][0].into_projective();
-    let mut res = multiples_of_g[0][0];
-    for outer in 0..outerc {
-        let mut inner = 0usize;
-        for i in 0..window {
-            if outer * window + i < modulus_size && scalar_val[outer * window + i] {
-                inner |= 1 << i;
-            }
-        }
-        res.mul_assign(&multiples_of_g[outer][inner]);
-    }
-    res
-}
-
-///doc
-pub fn gt_multi_scalar_mul<E: PairingEngine>(
-    scalar_size: usize,
-    window: usize,
-    table: &[Vec<E::Fqk>],
-    v: &[E::Fr],
-) -> Vec<E::Fqk> {
-    let outerc = (scalar_size + window - 1) / window;
-    assert!(outerc <= table.len());
-
-    //cfg_iter!(v)
-    v.iter()
-        .map(|e| gt_windowed_mul::<E>(outerc, window, table, e))
-        .collect::<Vec<_>>()
 }

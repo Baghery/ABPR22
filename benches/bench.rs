@@ -20,7 +20,7 @@ use ark_std::ops::Mul;
 
 const NUM_PROVE_REPEATITIONS: usize = 100;
 const NUM_VERIFY_REPEATITIONS: usize = 1;
-const NUM_PROVE_REPEATITIONS_AGG: usize = 100000;
+const NUM_PROVE_REPEATITIONS_AGG: usize = 1000;
 
 #[derive(Copy)]
 struct DummyCircuit<F: PrimeField> {

@@ -20,8 +20,8 @@ use ark_std::ops::Mul;
 use ark_bpr20::{PreparedVerifyingKey, Proof, VerifyingKey, vec_verify_proof};
 
 const NUM_PROVE_REPEATITIONS: usize = 10;
-const NUM_VERIFY_REPEATITIONS: usize = 20;
-const NUM_PROVE_REPEATITIONS_AGG: usize = 1000;
+const NUM_VERIFY_REPEATITIONS: usize = 2;
+const NUM_PROVE_REPEATITIONS_AGG: usize = 10000;
 
 #[derive(Copy)]
 struct DummyCircuit<F: PrimeField> {
@@ -100,7 +100,7 @@ macro_rules! bpr20_verify_bench {
             a: Some(<$bench_field>::rand(rng)),
             b: Some(<$bench_field>::rand(rng)),
             num_variables: 10,
-            num_constraints: 256,
+            num_constraints: 64,
         };
         let mut proofs: Vec<Proof<_>> = Vec::with_capacity(NUM_PROVE_REPEATITIONS_AGG as usize);
         let (pk, vk) = BPR20::<$bench_pairing_engine>::circuit_specific_setup(c, rng).unwrap();
@@ -144,12 +144,13 @@ fn bench_prove() {
 
 fn bench_verify() {
     bpr20_verify_bench!(bls, BlsFr, Bls12_381);
-    
+    /*
     bpr20_verify_bench!(mnt4, MNT4Fr, MNT4_298);
     
     bpr20_verify_bench!(mnt6, MNT6Fr, MNT6_298);
     bpr20_verify_bench!(mnt4big, MNT4BigFr, MNT4_753);
     bpr20_verify_bench!(mnt6big, MNT6BigFr, MNT6_753);
+    */
     
     
 }

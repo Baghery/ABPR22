@@ -148,8 +148,7 @@ pub fn vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
         ]
         .iter(),
     )).ok_or(SynthesisError::UnexpectedIdentity)?;
-
-    */
+*/
 
     let iterator = elem_g2.iter();
     let result = iterator.zip(proofs).map(|(x,y)|  
@@ -170,10 +169,34 @@ pub fn vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
     fold(true, |total, next| {total && next});
     
     
-    //println!("result is {:?}", result);
+    println!("result is {:?}", result);
+    
+/*
+    let iterator = elem_g2.iter();
+    iterator.zip(proofs).enumerate().for_each(|(i,(x,y))| { 
+    
+    let result = 
+    (E::pairing(y.d,(*x + y.delta_prime.into_projective()).into_affine())== pvk.vk.zt_gt) 
+    && 
+    (E::final_exponentiation(&E::miller_loop(
+        [
+            (y.a.into(), y.b.into()),
+            (
+                prepared_inputs.into_affine().into(),
+                pvk.gamma_g2_neg_pc.clone(),
+            ),
+            (y.c.into(), y.delta_prime.neg().into()),
+        ]
+        .iter(),
+    )).
+    unwrap() == pvk.vk.alpha_g1_beta_g2);
+    println!("subresult {:0} is {:?}",i, result);
+    
+    });
+    
     //let test2 = E::pairing(proof.d, delta_prime_delta_m.into_affine());
 
-        /*
+    
     let qap = E::miller_loop(
         [
             (proof.a.into(), proof.b.into()),
@@ -191,6 +214,7 @@ pub fn vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
     Ok((test == pvk.vk.alpha_g1_beta_g2) && (test2 == pvk.vk.zt_gt))
     */
     Ok(result)
+    //Ok(true)
 }
 
 /// Verify a proof `proof` against the prepared verification key `pvk`,

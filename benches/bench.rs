@@ -2,7 +2,6 @@
 //     RAYON_NUM_THREADS=N cargo bench --no-default-features --features "std parallel" -- --nocapture
 // where N is the number of threads you want to use (N = 1 for single-thread).
 
-use ark_std::rand::SeedableRng;
 use ark_bls12_381::{Bls12_381, Fr as BlsFr};
 use ark_crypto_primitives::SNARK;
 use ark_ff::{PrimeField, UniformRand};
@@ -17,7 +16,7 @@ use ark_relations::{
 };
 use ark_std::ops::Mul;
 
-use ark_bpr20::{PreparedVerifyingKey, Proof, VerifyingKey, vec_verify_proof};
+use ark_bpr20::{Proof, vec_verify_proof};
 
 const NUM_PROVE_REPEATITIONS: usize = 10;
 const NUM_VERIFY_REPEATITIONS: usize = 2;
@@ -103,8 +102,11 @@ macro_rules! bpr20_verify_bench {
             num_constraints: 64,
         };
         let mut proofs: Vec<Proof<_>> = Vec::with_capacity(NUM_PROVE_REPEATITIONS_AGG as usize);
+        let mut prepared_inputs: Vec<Vec<_>> = Vec::new();
         let (pk, vk) = BPR20::<$bench_pairing_engine>::circuit_specific_setup(c, rng).unwrap();
-        // BATCHED -> AGGERAGATED 
+        
+        
+
         for _ in 0..NUM_PROVE_REPEATITIONS_AGG {
             proofs.push(BPR20::<$bench_pairing_engine>::prove(&pk, c.clone(), rng).unwrap());
         }
@@ -114,12 +116,20 @@ macro_rules! bpr20_verify_bench {
 
         //Now the counter starts  
         let start = ark_std::time::Instant::now();
+
         //The preprocessing happens of vk
         let pvk = BPR20::<$bench_pairing_engine>::process_vk(&vk).unwrap();
+
+        //The preprocessing of input is here. Note that this is redundent in this situtation because it is the same instances.
+        for _ in 0..NUM_PROVE_REPEATITIONS_AGG {
+            prepared_inputs.push(vec![v]);
+        }
+
+        //Verification starts!
         for p in 0..NUM_VERIFY_REPEATITIONS {
             
             println!("loop number {:?} in verification loops", p);
-            vec_verify_proof::<$bench_pairing_engine>(&pvk, &proofs, &vec![v]).unwrap();
+            vec_verify_proof::<$bench_pairing_engine>(&pvk, &proofs, &prepared_inputs).unwrap();
         }
 
         println!(

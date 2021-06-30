@@ -141,6 +141,7 @@ macro_rules! bpr20_verify_bench_vec {
             num_constraints: 32,
         };
         let mut proofs: Vec<Proof<_>> = Vec::with_capacity(NUM_PROVE_REPEATITIONS_AGG as usize);
+        let mut prepared_inputs: Vec<Vec<_>> = Vec::new();
         let (pk, vk) = BPR20::<$bench_pairing_engine>::circuit_specific_setup(c, rng).unwrap();
         
         
@@ -155,10 +156,18 @@ macro_rules! bpr20_verify_bench_vec {
         let start = ark_std::time::Instant::now();
         //The preprocessing happens of vk
         let pvk = BPR20::<$bench_pairing_engine>::process_vk(&vk).unwrap();
+
+
+        //The preprocessing of input is here. Note that this is redundent in this situtation because it is the same instances.
+        for _ in 0..NUM_PROVE_REPEATITIONS_AGG {
+            prepared_inputs.push(vec![v]);
+        }
+
+        //Verification starts!
         for p in 0..NUM_VERIFY_REPEATITIONS {
             
             println!("loop number {:?} in verification loops", p);
-            vec_verify_proof::<$bench_pairing_engine>(&pvk, &proofs, &vec![v]).unwrap();
+            vec_verify_proof::<$bench_pairing_engine>(&pvk, &proofs, &prepared_inputs).unwrap();
         }
 
         println!(

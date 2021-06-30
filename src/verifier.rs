@@ -7,7 +7,6 @@ use super::{PreparedVerifyingKey, Proof, VerifyingKey};
 use ark_relations::r1cs::{Result as R1CSResult, SynthesisError};
 
 use core::ops::{AddAssign, Neg};
-
 use blake2::{Blake2b, Digest};
 use ark_std::{vec::Vec};
 
@@ -98,7 +97,7 @@ pub fn verify_proof<E: PairingEngine>(
 pub fn vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
     pvk: &PreparedVerifyingKey<E>,
     proofs: &Vec<Proof<E>>,
-    prepared_inputs: &E::G1Projective,
+    prepared_inputs: &Vec<E::G1Projective>,
 ) -> R1CSResult<bool> {
     let mut m_fr: Vec<E::Fr> = Vec::new();
     let mut size_proofs = 0usize;
@@ -141,14 +140,14 @@ pub fn vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
     */
     
     let result = 
-    elem_g2.iter().zip(proofs).zip(m_fr).map(|((x, y), z)|  
+    elem_g2.iter().zip(proofs).zip(m_fr).zip(prepared_inputs).map(|(((x, y), z),w)|  
     (E::pairing(y.d,y.delta_prime + x.into_affine()) == E::Fqk::pow_with_table(&powers_of_2[..], z.into()).unwrap() * pvk.vk.kappa_zt_gt)
     &&
     (E::final_exponentiation(&E::miller_loop(
         [
             (y.a.into(), y.b.into()),
             (
-                prepared_inputs.into_affine().into(),
+                w.into_affine().into(),
                 pvk.gamma_g2_neg_pc.clone(),
             ),
             (y.c.into(), y.delta_prime.neg().into()),
@@ -158,8 +157,8 @@ pub fn vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
     unwrap() == pvk.vk.alpha_g1_beta_g2)).
     fold(true, |total, next| {total && next});
     
-    
-    //println!("result is {:?}", result);
+     
+    println!("result is {:?}", result);
     
     Ok(result)
 }
@@ -169,8 +168,12 @@ pub fn vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
 pub fn vec_verify_proof<E: PairingEngine>(
     pvk: &PreparedVerifyingKey<E>,
     proofs: &Vec<Proof<E>>,
-    public_inputs: &[E::Fr],
+    public_inputs: &Vec<Vec<E::Fr>>,
 ) -> R1CSResult<bool> {
-    let prepared_inputs = prepare_inputs(pvk, public_inputs)?;
+    let mut prepared_inputs: Vec<_> = Vec::new();
+    for (_,pub_input) in public_inputs.iter().enumerate(){
+        prepared_inputs.push(prepare_inputs(pvk, pub_input)?);
+    }
+    
     vec_verify_proof_with_prepared_inputs(pvk, proofs, &prepared_inputs)
 }

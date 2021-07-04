@@ -20,7 +20,7 @@ use ark_bpr20::{Proof, vec_verify_proof};
 
 const NUM_PROVE_REPEATITIONS: usize = 10;
 const NUM_VERIFY_REPEATITIONS: usize = 2;
-const NUM_PROVE_REPEATITIONS_AGG: usize = 10000;
+const NUM_PROVE_REPEATITIONS_AGG: usize = 100000;
 
 #[derive(Copy)]
 struct DummyCircuit<F: PrimeField> {
@@ -118,18 +118,19 @@ macro_rules! bpr20_verify_bench {
         let start = ark_std::time::Instant::now();
 
         //The preprocessing happens of vk
-        let pvk = BPR20::<$bench_pairing_engine>::process_vk(&vk).unwrap();
 
         //The preprocessing of input is here. Note that this is redundent in this situtation because it is the same instances.
         for _ in 0..NUM_PROVE_REPEATITIONS_AGG {
             prepared_inputs.push(vec![v]);
         }
 
+        //let pvk = BPR20::<$bench_pairing_engine>::process_vk(&vk).unwrap();
+
         //Verification starts!
         for p in 0..NUM_VERIFY_REPEATITIONS {
             
             println!("loop number {:?} in verification loops", p);
-            vec_verify_proof::<$bench_pairing_engine>(&pvk, &proofs, &prepared_inputs).unwrap();
+            vec_verify_proof::<$bench_pairing_engine>(&vk, &proofs, &prepared_inputs).unwrap();
         }
 
         println!(

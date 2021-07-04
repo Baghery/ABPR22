@@ -100,6 +100,9 @@ pub fn vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
     proofs: &Vec<Proof<E>>,
     prepared_inputs: &Vec<E::G1Projective>,
 ) -> R1CSResult<bool> {
+
+    println!("Started the Hashing part");
+
     let mut m_fr: Vec<E::Fr> = Vec::new();
     let mut size_proofs = 0usize;
     for (_,proof) in proofs.iter().enumerate() {
@@ -114,8 +117,10 @@ pub fn vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
         //println!("{:?} m_fr element {:?}",i, m_fr[i]);
         size_proofs +=1 ;
     }
-    
-    
+    println!("Ended the Hashing part");
+
+    println!("Started the MSM part");
+
     let scalar_bits = E::Fr::size_in_bits();
     let delta_g2_window = FixedBaseMSM::get_mul_window_size(size_proofs);
     let delta_g2_table =
@@ -123,8 +128,11 @@ pub fn vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
     
     let elem_g2 =
         FixedBaseMSM::multi_scalar_mul::<E::G2Projective>(scalar_bits, delta_g2_window, &delta_g2_table, &m_fr);
-    
         
+        
+    println!("Ended the MSM part");
+
+    /* 
     let iterator = elem_g2.iter();
     let result = iterator.zip(proofs).zip(prepared_inputs).map(|((x,y),z)|  
     (E::pairing(y.d,(*x + y.delta_prime.into_projective()).into_affine())== pvk.vk.zt_gt) 
@@ -149,20 +157,70 @@ pub fn vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
 
     
     Ok(result)
+    
+    */
+
+    
+    let mut bool_results: Vec<_> = Vec::new();
+    //let mut i = 0;
+    for ((x,y),z) in elem_g2.iter().zip(proofs.iter()).zip(prepared_inputs.iter()){
+        let tmp11 = E::pairing(y.d,(*x + y.delta_prime.into_projective()).into_affine());
+        let tmp12 = pvk.vk.zt_gt;
+        let tmp1 = tmp11 == tmp12 ;
+
+        let tmp21 = E::final_exponentiation(&E::miller_loop(
+            [
+                (y.a.into(), y.b.into()),
+                (
+                    z.into_affine().into(),
+                    pvk.gamma_g2_neg_pc.clone(),
+                ),
+                (y.c.into(), y.delta_prime.neg().into()),
+            ]
+            .iter(),
+        )).unwrap();
+        let tmp22 = pvk.vk.alpha_g1_beta_g2;
+        let tmp2 =  tmp21 == tmp22 ;
+
+        let tmp =  tmp1  && tmp2 ;
+        
+        //println!("classical way {:?}",pvk.vk.delta_g2.mul(m_fr[i]).into_affine());
+        //println!("new way {:?}",x.into_affine());
+        //println!("left side {:?}", tmp11);
+        //println!("left side {:?}", tmp12);
+        //println!("left side {:?}", tmp21);
+        //println!("left side {:?}", tmp22);
+        //println!("left side {:?}", tmp);
+        bool_results.push(tmp);
+        //i +=1;
+
+    }
+    
+    let result = bool_results.iter().fold(true, |total, next| {total && *next});
+    //println!("result is {:?}", results);
+    
+
+    
+    Ok(result)
+    
+    
 
 }
 
 /// Verify a vector of proofs `proofs` against the prepared verification key `pvk`,
 /// with respect to the instances `public_inputs`'s.
 pub fn vec_verify_proof<E: PairingEngine>(
-    pvk: &PreparedVerifyingKey<E>,
+    vk: &VerifyingKey<E>,
     proofs: &Vec<Proof<E>>,
     public_inputs: &Vec<Vec<E::Fr>>,
 ) -> R1CSResult<bool> {
+    //let pvk = prepare_verifying_key(vk);
     let mut prepared_inputs: Vec<_> = Vec::new();
-    for (_,pub_input) in public_inputs.iter().enumerate(){
-        prepared_inputs.push(prepare_inputs(pvk, pub_input)?);
-    }
     
-    vec_verify_proof_with_prepared_inputs(pvk, proofs, &prepared_inputs)
+    for (_,pub_input) in public_inputs.iter().enumerate(){
+        let pvk = prepare_verifying_key(vk);
+        prepared_inputs.push(prepare_inputs(&pvk, pub_input)?);
+    }
+    let pvk = prepare_verifying_key(vk);
+    vec_verify_proof_with_prepared_inputs(&pvk, proofs, &prepared_inputs)
 }

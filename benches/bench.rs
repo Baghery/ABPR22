@@ -20,7 +20,7 @@ use ark_std::ops::Mul;
 
 const NUM_PROVE_REPEATITIONS: usize = 100;
 const NUM_VERIFY_REPEATITIONS: usize = 1;
-const NUM_PROVE_REPEATITIONS_AGG: usize = 1000;
+const NUM_PROVE_REPEATITIONS_AGG: usize = 50000;
 
 #[derive(Copy)]
 struct DummyCircuit<F: PrimeField> {
@@ -155,7 +155,7 @@ macro_rules! bpr20_verify_bench_vec {
         //Now the counter starts  
         let start = ark_std::time::Instant::now();
         //The preprocessing happens of vk
-        let pvk = BPR20::<$bench_pairing_engine>::process_vk(&vk).unwrap();
+        //let pvk = BPR20::<$bench_pairing_engine>::process_vk(&vk).unwrap();
 
 
         //The preprocessing of input is here. Note that this is redundent in this situtation because it is the same instances.

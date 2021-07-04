@@ -141,7 +141,8 @@ pub fn vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
     
     let result = 
     elem_g2.iter().zip(proofs).zip(m_fr).zip(prepared_inputs).map(|(((x, y), z),w)|  
-    (E::pairing(y.d,y.delta_prime + x.into_affine()) == E::Fqk::pow_with_table(&powers_of_2[..], z.into()).unwrap() * pvk.vk.kappa_zt_gt)
+    (E::pairing(y.d,y.delta_prime + x.into_affine()) == 
+                        E::Fqk::pow_with_table(&powers_of_2[..], z.into()).unwrap() * pvk.vk.kappa_zt_gt)
     &&
     (E::final_exponentiation(&E::miller_loop(
         [

@@ -167,7 +167,7 @@ macro_rules! bpr20_verify_bench_vec {
         for p in 0..NUM_VERIFY_REPEATITIONS {
             
             println!("loop number {:?} in verification loops", p);
-            vec_verify_proof::<$bench_pairing_engine>(&pvk, &proofs, &prepared_inputs).unwrap();
+            vec_verify_proof::<$bench_pairing_engine>(&vk, &proofs, &prepared_inputs).unwrap();
         }
 
         println!(

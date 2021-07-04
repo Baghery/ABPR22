@@ -166,14 +166,15 @@ pub fn vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
 /// Verify a vector of proof `proofs` against the prepared verification key `pvk`,
 /// with respect to the instance `public_inputs`.
 pub fn vec_verify_proof<E: PairingEngine>(
-    pvk: &PreparedVerifyingKey<E>,
+    vk: &VerifyingKey<E>,
     proofs: &Vec<Proof<E>>,
     public_inputs: &Vec<Vec<E::Fr>>,
 ) -> R1CSResult<bool> {
     let mut prepared_inputs: Vec<_> = Vec::new();
     for (_,pub_input) in public_inputs.iter().enumerate(){
-        prepared_inputs.push(prepare_inputs(pvk, pub_input)?);
+        let pvk = prepare_verifying_key(vk);
+        prepared_inputs.push(prepare_inputs(&pvk, pub_input)?);
     }
-    
-    vec_verify_proof_with_prepared_inputs(pvk, proofs, &prepared_inputs)
+    let pvk = prepare_verifying_key(vk);
+    vec_verify_proof_with_prepared_inputs(&pvk, proofs, &prepared_inputs)
 }

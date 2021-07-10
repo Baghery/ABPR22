@@ -20,7 +20,7 @@ use ark_std::ops::Mul;
 
 const NUM_PROVE_REPEATITIONS: usize = 100;
 const NUM_VERIFY_REPEATITIONS: usize = 1;
-const NUM_PROVE_REPEATITIONS_AGG: usize = 50000;
+const NUM_PROVE_REPEATITIONS_AGG: usize = 100000;
 
 #[derive(Copy)]
 struct DummyCircuit<F: PrimeField> {
@@ -196,12 +196,12 @@ fn bench_verify() {
     bpr20_verify_bench!(mnt6big, MNT6BigFr, MNT6_753);
     */
     bpr20_verify_bench_vec!(bls, BlsFr, Bls12_381);
-    /*
+    
     bpr20_verify_bench_vec!(mnt4, MNT4Fr, MNT4_298);
     bpr20_verify_bench_vec!(mnt6, MNT6Fr, MNT6_298);
     bpr20_verify_bench_vec!(mnt4big, MNT4BigFr, MNT4_753);
     bpr20_verify_bench_vec!(mnt6big, MNT6BigFr, MNT6_753);
-    */
+    
     
 }
 

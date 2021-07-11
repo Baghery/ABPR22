@@ -45,20 +45,6 @@ pub fn verify_proof_with_prepared_inputs<E: PairingEngine>(
     proof: &Proof<E>,
     prepared_inputs: &E::G1Projective,
 ) -> R1CSResult<bool> {
-    let qap = E::miller_loop(
-        [
-            (proof.a.into(), proof.b.into()),
-            (
-                prepared_inputs.into_affine().into(),
-                pvk.gamma_g2_neg_pc.clone(),
-            ),
-            (proof.c.into(), proof.delta_prime.neg().into()),
-        ]
-        .iter(),
-    );
-
-    let test = E::final_exponentiation(&qap).ok_or(SynthesisError::UnexpectedIdentity)?;
-
 
     let hash = Blake2b::new()
     .chain(to_bytes!(&proof.a).unwrap())
@@ -73,9 +59,24 @@ pub fn verify_proof_with_prepared_inputs<E: PairingEngine>(
     let mut delta_prime_delta_m = pvk.vk.delta_g2.mul(m_fr);
     delta_prime_delta_m.add_assign_mixed(&proof.delta_prime);
 
-    let test2 = E::pairing(proof.d, delta_prime_delta_m.into_affine());
 
-    Ok((test == pvk.vk.alpha_g1_beta_g2) && (test2 == pvk.vk.zt_gt))
+    let qap = E::miller_loop(
+        [
+            (proof.a.into(), proof.b.into()),
+            (
+                prepared_inputs.into_affine().into(),
+                pvk.gamma_g2_neg_pc.clone(),
+            ),
+            (proof.c.into(), proof.delta_prime.neg().into()),
+            (proof.d.into(), delta_prime_delta_m.into_affine().into()),
+            (pvk.vk.zt_delta_g1.mul((m_fr*m_fr).into_repr()).into_affine().into(),pvk.vk.delta_g2.neg().into()),
+        ]
+        .iter(),
+    );
+
+    let test = E::final_exponentiation(&qap).ok_or(SynthesisError::UnexpectedIdentity)?;
+
+    Ok(test == pvk.vk.alpha_g1_beta_g2)
 }
 
 /// Verify a proof `proof` against the prepared verification key `pvk`,
@@ -104,8 +105,9 @@ pub fn vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
     println!("Started the Hashing part");
 
     let mut m_fr: Vec<E::Fr> = Vec::new();
+    let mut m_fr_sq: Vec<E::Fr> = Vec::new();
     let mut size_proofs = 0usize;
-    for (_,proof) in proofs.iter().enumerate() {
+    for (i,proof) in proofs.iter().enumerate() {
         let hash = Blake2b::new()
         .chain(to_bytes!(&proof.a).unwrap())
         .chain(to_bytes!(&proof.b).unwrap())
@@ -114,6 +116,7 @@ pub fn vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
         let mut output = [0u8; 64];
         output.copy_from_slice(&hash.finalize());
         m_fr.push(E::Fr::from_le_bytes_mod_order(&output));
+        m_fr_sq.push(m_fr[i]*m_fr[i]);
         //println!("{:?} m_fr element {:?}",i, m_fr[i]);
         size_proofs +=1 ;
     }
@@ -129,6 +132,12 @@ pub fn vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
     let elem_g2 =
         FixedBaseMSM::multi_scalar_mul::<E::G2Projective>(scalar_bits, delta_g2_window, &delta_g2_table, &m_fr);
         
+    let zt_delta_g1_window = FixedBaseMSM::get_mul_window_size(size_proofs);
+    let zt_delta_g1_table =
+        FixedBaseMSM::get_window_table::<E::G1Projective>(scalar_bits, zt_delta_g1_window, pvk.vk.zt_delta_g1.into_projective());
+    
+    let elem_g1 =
+        FixedBaseMSM::multi_scalar_mul::<E::G1Projective>(scalar_bits, zt_delta_g1_window, &zt_delta_g1_table, &m_fr_sq);
         
     println!("Ended the MSM part");
 
@@ -163,12 +172,10 @@ pub fn vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
     
     let mut bool_results: Vec<_> = Vec::new();
     //let mut i = 0;
-    for ((x,y),z) in elem_g2.iter().zip(proofs.iter()).zip(prepared_inputs.iter()){
-        let tmp11 = E::pairing(y.d,(*x + y.delta_prime.into_projective()).into_affine());
-        let tmp12 = pvk.vk.zt_gt;
-        let tmp1 = tmp11 == tmp12 ;
+    for (((x,y),z),w) in elem_g2.iter().zip(proofs.iter()).zip(prepared_inputs.iter()).zip(elem_g1.iter()){
+        
 
-        let tmp21 = E::final_exponentiation(&E::miller_loop(
+        let tmp1 = E::final_exponentiation(&E::miller_loop(
             [
                 (y.a.into(), y.b.into()),
                 (
@@ -176,13 +183,15 @@ pub fn vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
                     pvk.gamma_g2_neg_pc.clone(),
                 ),
                 (y.c.into(), y.delta_prime.neg().into()),
+                (y.d.into(),(*x + y.delta_prime.into_projective()).into_affine().into()),
+                (w.into_affine().into(),pvk.vk.delta_g2.neg().into()),
             ]
             .iter(),
         )).unwrap();
-        let tmp22 = pvk.vk.alpha_g1_beta_g2;
-        let tmp2 =  tmp21 == tmp22 ;
+        let tmp2 = pvk.vk.alpha_g1_beta_g2;
+        let tmp =  tmp1 == tmp2 ;
 
-        let tmp =  tmp1  && tmp2 ;
+        
         
         //println!("classical way {:?}",pvk.vk.delta_g2.mul(m_fr[i]).into_affine());
         //println!("new way {:?}",x.into_affine());
@@ -197,7 +206,7 @@ pub fn vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
     }
     
     let result = bool_results.iter().fold(true, |total, next| {total && *next});
-    //println!("result is {:?}", results);
+    println!("result is {:?}", result);
     
 
     

@@ -64,8 +64,8 @@ pub struct VerifyingKey<E: PairingEngine> {
     pub gamma_abc_g1: Vec<E::G1Affine>,
     /// The element `e(alpha * G, beta * H)` in `E::GT`.
     pub alpha_g1_beta_g2: E::Fqk,
-    /// The element `e((zt*gamma^{-1}) * G, delta * H)` in `E::GT` which is equal to [zt]_E::GT.
-    pub zt_gt: E::Fqk,
+    /// The element `zt*delta^{-1}` in `E::G1` 
+    pub zt_delta_g1: E::G1Affine,
 }
 
 impl<E: PairingEngine> ToBytes for VerifyingKey<E> {
@@ -78,7 +78,7 @@ impl<E: PairingEngine> ToBytes for VerifyingKey<E> {
             q.write(&mut writer)?;
         }
         self.alpha_g1_beta_g2.write(&mut writer)?;
-        self.zt_gt.write(&mut writer)?;
+        self.zt_delta_g1.write(&mut writer)?;
         Ok(())
     }
 }
@@ -92,7 +92,7 @@ impl<E: PairingEngine> Default for VerifyingKey<E> {
             delta_g2: E::G2Affine::default(),
             gamma_abc_g1: Vec::new(),
             alpha_g1_beta_g2: E::Fqk::default(),
-            zt_gt: E::Fqk::default(),
+            zt_delta_g1: E::G1Affine::default(),
         }
     }
 }

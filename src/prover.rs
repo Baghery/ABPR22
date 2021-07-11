@@ -175,7 +175,7 @@ where
     //Computing [D]_1
     let zt = pk.h_query[0];
     let mul_factor = (zeta + m_fr).inverse().unwrap();
-    let d = zt.clone().mul(mul_factor).into_affine();
+    let d = zt.clone().mul(mul_factor*m_fr*m_fr).into_affine();
 
     
     

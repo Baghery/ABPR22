@@ -20,7 +20,7 @@ use ark_bpr20::{Proof, vec_verify_proof};
 
 const NUM_PROVE_REPEATITIONS: usize = 10;
 const NUM_VERIFY_REPEATITIONS: usize = 2;
-const NUM_PROVE_REPEATITIONS_AGG: usize = 100000;
+const NUM_PROVE_REPEATITIONS_AGG: usize = 10000;
 
 #[derive(Copy)]
 struct DummyCircuit<F: PrimeField> {

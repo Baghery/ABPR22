@@ -140,37 +140,9 @@ pub fn vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
         
     println!("Ended the MSM part");
 
-    /* 
-    let iterator = elem_g2.iter();
-    let result = iterator.zip(proofs).zip(prepared_inputs).map(|((x,y),z)|  
-    (E::pairing(y.d,(*x + y.delta_prime.into_projective()).into_affine())== pvk.vk.zt_gt) 
-    && 
-    (E::final_exponentiation(&E::miller_loop(
-        [
-            (y.a.into(), y.b.into()),
-            (
-                z.into_affine().into(),
-                pvk.gamma_g2_neg_pc.clone(),
-            ),
-            (y.c.into(), y.delta_prime.neg().into()),
-        ]
-        .iter(),
-    )).
-    unwrap() == pvk.vk.alpha_g1_beta_g2)).
-    fold(true, |total, next| {total && next});
-    
-    
-    println!("result is {:?}", result);
-    
-
-    
-    Ok(result)
-    
-    */
 
     
     let mut bool_results: Vec<_> = Vec::new();
-    //let mut i = 0;
     for (((x,y),z),w) in elem_g2.iter().zip(proofs.iter()).zip(prepared_inputs.iter()).zip(elem_g1.iter()){
         
 
@@ -190,22 +162,12 @@ pub fn vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
         let tmp2 = pvk.vk.alpha_g1_beta_g2;
         let tmp =  tmp1 == tmp2 ;
 
-        
-        
-        //println!("classical way {:?}",pvk.vk.delta_g2.mul(m_fr[i]).into_affine());
-        //println!("new way {:?}",x.into_affine());
-        //println!("left side {:?}", tmp11);
-        //println!("left side {:?}", tmp12);
-        //println!("left side {:?}", tmp21);
-        //println!("left side {:?}", tmp22);
-        println!("left side {:?}", tmp);
         bool_results.push(tmp);
-        //i +=1;
 
     }
     
     let result = bool_results.iter().fold(true, |total, next| {total && *next});
-    println!("result is {:?}", result);
+    //println!("result is {:?}", result);
     
 
     
@@ -224,7 +186,7 @@ pub fn vec_verify_proof<E: PairingEngine>(
 ) -> R1CSResult<bool> {
     //let pvk = prepare_verifying_key(vk);
     let mut prepared_inputs: Vec<_> = Vec::new();
-    
+    //This redundancy should be removed. It is here only to give a fair comparision to the Arkworks implementation of Groth16
     for (_,pub_input) in public_inputs.iter().enumerate(){
         let pvk = prepare_verifying_key(vk);
         prepared_inputs.push(prepare_inputs(&pvk, pub_input)?);

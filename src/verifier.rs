@@ -166,6 +166,7 @@ pub fn vec_verify_proof<E: PairingEngine>(
     public_inputs: &Vec<Vec<E::Fr>>,
 ) -> R1CSResult<bool> {
     let mut prepared_inputs: Vec<_> = Vec::new();
+    //This redundancy should be removed. It is here only to give a fair comparision to the Arkworks implementation of Groth16
     for (_,pub_input) in public_inputs.iter().enumerate(){
         let pvk = prepare_verifying_key(vk);
         prepared_inputs.push(prepare_inputs(&pvk, pub_input)?);

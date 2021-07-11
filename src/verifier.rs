@@ -132,13 +132,7 @@ pub fn vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
         powers_of_2.push(p);
     }
     
-    /*
-    println!("num of powers {:?}", num_powers);    
-    println!("elements in powers_of_2 {:?}", powers_of_2.len());
-    let table = E::Fqk::pow_with_table(&powers_of_2[..], m_fr[0].into()).unwrap();
-    println!("elements in table {:?}", table);
-    */
-    
+   
     let result = 
     elem_g2.iter().zip(proofs).zip(m_fr).zip(prepared_inputs).map(|(((x, y), z),w)|  
     (E::pairing(y.d,y.delta_prime + x.into_affine()) == 
@@ -159,7 +153,7 @@ pub fn vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
     fold(true, |total, next| {total && next});
     
      
-    println!("result is {:?}", result);
+    //println!("result is {:?}", result);
     
     Ok(result)
 }

@@ -92,7 +92,39 @@ macro_rules! bpr20_prove_bench {
     };
 }
 
+
 macro_rules! bpr20_verify_bench {
+    ($bench_name:ident, $bench_field:ty, $bench_pairing_engine:ty) => {
+        let rng = &mut ark_std::test_rng();
+        let c = DummyCircuit::<$bench_field> {
+            a: Some(<$bench_field>::rand(rng)),
+            b: Some(<$bench_field>::rand(rng)),
+            num_variables: 10,
+            num_constraints: 65536,
+        };
+
+        let (pk, vk) = BPR20::<$bench_pairing_engine>::circuit_specific_setup(c, rng).unwrap();
+        let proof = BPR20::<$bench_pairing_engine>::prove(&pk, c.clone(), rng).unwrap();
+
+        let v = c.a.unwrap().mul(c.b.unwrap());
+
+
+        let start = ark_std::time::Instant::now();
+
+        for _ in 0..NUM_VERIFY_REPEATITIONS {
+            let _ = BPR20::<$bench_pairing_engine>::verify(&vk, &vec![v], &proof).unwrap();
+        }
+
+        println!(
+            "verifying time for {}: {} ns",
+            stringify!($bench_pairing_engine),
+            start.elapsed().as_nanos() / NUM_VERIFY_REPEATITIONS as u128
+        );
+    };
+}
+
+
+macro_rules! bpr20_verify_bench_vec {
     ($bench_name:ident, $bench_field:ty, $bench_pairing_engine:ty) => {
         let rng = &mut ark_std::test_rng();
         let c = DummyCircuit::<$bench_field> {
@@ -124,7 +156,6 @@ macro_rules! bpr20_verify_bench {
             prepared_inputs.push(vec![v]);
         }
 
-        //let pvk = BPR20::<$bench_pairing_engine>::process_vk(&vk).unwrap();
 
         //Verification starts!
         for p in 0..NUM_VERIFY_REPEATITIONS {
@@ -154,19 +185,23 @@ fn bench_prove() {
 
 
 fn bench_verify() {
-    bpr20_verify_bench!(bls, BlsFr, Bls12_381);
-    /*
-    bpr20_verify_bench!(mnt4, MNT4Fr, MNT4_298);
     
+    bpr20_verify_bench!(bls, BlsFr, Bls12_381);
+    bpr20_verify_bench!(mnt4, MNT4Fr, MNT4_298);
     bpr20_verify_bench!(mnt6, MNT6Fr, MNT6_298);
     bpr20_verify_bench!(mnt4big, MNT4BigFr, MNT4_753);
     bpr20_verify_bench!(mnt6big, MNT6BigFr, MNT6_753);
-    */
+    
+    bpr20_verify_bench_vec!(bls, BlsFr, Bls12_381);
+    bpr20_verify_bench_vec!(mnt4, MNT4Fr, MNT4_298);
+    bpr20_verify_bench_vec!(mnt6, MNT6Fr, MNT6_298);
+    bpr20_verify_bench_vec!(mnt4big, MNT4BigFr, MNT4_753);
+    bpr20_verify_bench_vec!(mnt6big, MNT6BigFr, MNT6_753);
     
     
 }
 
 fn main() {
-    //bench_prove();
+    bench_prove();
     bench_verify();
 }

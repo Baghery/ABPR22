@@ -125,17 +125,16 @@ pub fn vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
     println!("Started the MSM part");
 
     let scalar_bits = E::Fr::size_in_bits();
+
     let delta_g2_window = FixedBaseMSM::get_mul_window_size(size_proofs);
     let delta_g2_table =
         FixedBaseMSM::get_window_table::<E::G2Projective>(scalar_bits, delta_g2_window, pvk.vk.delta_g2.into_projective());
-    
     let elem_g2 =
         FixedBaseMSM::multi_scalar_mul::<E::G2Projective>(scalar_bits, delta_g2_window, &delta_g2_table, &m_fr);
         
     let zt_delta_g1_window = FixedBaseMSM::get_mul_window_size(size_proofs);
     let zt_delta_g1_table =
         FixedBaseMSM::get_window_table::<E::G1Projective>(scalar_bits, zt_delta_g1_window, pvk.vk.zt_delta_g1.into_projective());
-    
     let elem_g1 =
         FixedBaseMSM::multi_scalar_mul::<E::G1Projective>(scalar_bits, zt_delta_g1_window, &zt_delta_g1_table, &m_fr_sq);
         
@@ -199,7 +198,7 @@ pub fn vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
         //println!("left side {:?}", tmp12);
         //println!("left side {:?}", tmp21);
         //println!("left side {:?}", tmp22);
-        //println!("left side {:?}", tmp);
+        println!("left side {:?}", tmp);
         bool_results.push(tmp);
         //i +=1;
 

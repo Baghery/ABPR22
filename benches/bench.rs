@@ -168,7 +168,7 @@ macro_rules! bpr20_verify_bench_vec {
         println!(
             "verifying time for {}: {} ns",
             stringify!($bench_pairing_engine),
-            start.elapsed().as_nanos() / NUM_VERIFY_REPEATITIONS as u128 / NUM_PROVE_REPEATITIONS_AGG as u128
+            start.elapsed().as_nanos() / NUM_VERIFY_REPEATITIONS_AGG as u128 / NUM_PROVE_REPEATITIONS_AGG as u128
         );
     };
 }

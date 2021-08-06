@@ -19,7 +19,7 @@ use ark_std::ops::Mul;
 use ark_bpr20::{Proof, vec_verify_proof};
 
 const NUM_PROVE_REPEATITIONS: usize = 10;
-const NUM_VERIFY_REPEATITIONS: usize = 1000;
+const NUM_VERIFY_REPEATITIONS: usize = 50000;
 const NUM_PROVE_REPEATITIONS_AGG: usize = 10000;
 const NUM_VERIFY_REPEATITIONS_AGG: usize = 2;
 
@@ -203,6 +203,6 @@ fn bench_verify() {
 }
 
 fn main() {
-    bench_prove();
+    //bench_prove();
     bench_verify();
 }

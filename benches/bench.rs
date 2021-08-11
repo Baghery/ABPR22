@@ -203,6 +203,6 @@ fn bench_verify() {
 }
 
 fn main() {
-    //bench_prove();
+    bench_prove();
     bench_verify();
 }

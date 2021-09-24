@@ -19,8 +19,6 @@ pub struct Proof<E: PairingEngine> {
     pub c: E::G1Affine,
     /// The `delta'` element in `G2`.
     pub delta_prime: E::G2Affine,
-    /// The `D'` element in `G1`.
-    pub d: E::G1Affine,
 }
 
 impl<E: PairingEngine> ToBytes for Proof<E> {
@@ -29,8 +27,7 @@ impl<E: PairingEngine> ToBytes for Proof<E> {
         self.a.write(&mut writer)?;
         self.b.write(&mut writer)?;
         self.c.write(&mut writer)?;
-        self.delta_prime.write(&mut writer)?;
-        self.d.write(&mut writer)
+        self.delta_prime.write(&mut writer)
     }
 }
 
@@ -41,7 +38,6 @@ impl<E: PairingEngine> Default for Proof<E> {
             b: E::G2Affine::default(),
             c: E::G1Affine::default(),
             delta_prime: E::G2Affine::default(),
-            d: E::G1Affine::default(),
         }
     }
 }

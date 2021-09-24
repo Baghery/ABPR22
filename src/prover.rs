@@ -81,20 +81,11 @@ where
     let h = R1CStoQAP::witness_map::<E::Fr, D<E::Fr>>(cs.clone())?;
     end_timer!(witness_map_time);
 
-    let zeta_inv = zeta.inverse().unwrap();
-
-    let h_assignment = cfg_into_iter!(h).map(|s| (zeta_inv*s).into()).collect::<Vec<_>>();
     let c_acc_time = start_timer!(|| "Compute C");
 
-    let h_acc = VariableBaseMSM::multi_scalar_mul(&pk.h_query, &h_assignment);
-    drop(h_assignment);
+    //drop(h_assignment);
     // Compute C
     let prover = cs.borrow().unwrap();
-    let aux_assignment_scaled = cfg_iter!(prover.witness_assignment)
-        .map(|s| (zeta_inv*s).into())
-        .collect::<Vec<_>>();
-
-    let l_aux_acc = VariableBaseMSM::multi_scalar_mul(&pk.l_query, &aux_assignment_scaled);
 
     let aux_assignment = cfg_iter!(prover.witness_assignment)
         .map(|s| s.into_repr())
@@ -115,8 +106,8 @@ where
         .map(|s| s.into_repr())
         .collect::<Vec<_>>();
 
-    drop(prover);
-    drop(cs);
+    //drop(prover);
+    //drop(cs);
 
     let assignment = [&input_assignment[..], &aux_assignment[..]].concat();
     drop(aux_assignment);
@@ -153,31 +144,35 @@ where
     end_timer!(b_g2_acc_time);
 
     let c_time = start_timer!(|| "Finish C");
-    let mut g_c = s_g_a;
-    g_c += &r_g1_b;
-    g_c -= &r_s_delta_g1;
-    g_c += &l_aux_acc;
-    g_c += &h_acc;
-    end_timer!(c_time);
 
-    end_timer!(prover_time);
-    
     let hash = Blake2b::new()
     .chain(to_bytes!(&g_a.into_affine()).unwrap())
     .chain(to_bytes!(&g2_b.into_affine()).unwrap())
-    .chain(to_bytes!(&g_c.into_affine()).unwrap())
     .chain(to_bytes!(&delta_prime_g2).unwrap());
     let mut output = [0u8; 64];
     output.copy_from_slice(&hash.finalize());
     
     let m_fr = E::Fr::from_le_bytes_mod_order(&output);
     //println!("m_fr prover {0}", m_fr);
+    let factor = zeta * (zeta + m_fr).inverse().unwrap();   
+    let zeta_m_inv = (zeta + m_fr).inverse().unwrap();
 
-    //Computing [D]_1
-    let zt = pk.h_query[0];
-    let mul_factor = (zeta + m_fr).inverse().unwrap();
-    let d = zt.clone().mul(mul_factor*m_fr*m_fr).into_affine();
+    let h_assignment = cfg_into_iter!(h).map(|s| (s*zeta_m_inv).into()).collect::<Vec<_>>();
+    let h_acc = VariableBaseMSM::multi_scalar_mul(&pk.h_query, &h_assignment);
+    let aux_assignment_unscaled = cfg_iter!(prover.witness_assignment)
+        .map(|s| (*s*zeta_m_inv).into()) 
+        .collect::<Vec<_>>();
 
+    let l_aux_acc = VariableBaseMSM::multi_scalar_mul(&pk.l_query, &aux_assignment_unscaled);
+    
+    let mut g_c = s_g_a.mul(&factor.into_repr());
+    g_c += &r_g1_b.mul(&factor.into_repr());
+    g_c -= &r_s_delta_g1.mul(&factor.into_repr());
+    g_c += &l_aux_acc;
+    g_c += &h_acc;
+    end_timer!(c_time);
+
+    end_timer!(prover_time);
     
     
     Ok(Proof {
@@ -185,7 +180,6 @@ where
         b: g2_b.into_affine(),
         c: g_c.into_affine(),
         delta_prime: delta_prime_g2,
-        d: d,
     })
 }
 

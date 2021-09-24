@@ -49,7 +49,6 @@ pub fn verify_proof_with_prepared_inputs<E: PairingEngine>(
     let hash = Blake2b::new()
     .chain(to_bytes!(&proof.a).unwrap())
     .chain(to_bytes!(&proof.b).unwrap())
-    .chain(to_bytes!(&proof.c).unwrap())
     .chain(to_bytes!(&proof.delta_prime).unwrap());
     let mut output = [0u8; 64];
     output.copy_from_slice(&hash.finalize());
@@ -67,9 +66,7 @@ pub fn verify_proof_with_prepared_inputs<E: PairingEngine>(
                 prepared_inputs.into_affine().into(),
                 pvk.gamma_g2_neg_pc.clone(),
             ),
-            (proof.c.into(), proof.delta_prime.neg().into()),
-            (proof.d.into(), delta_prime_delta_m.into_affine().into()),
-            (pvk.vk.zt_delta_g1.mul((m_fr*m_fr).into_repr()).into_affine().into(),pvk.vk.delta_g2.neg().into()),
+            (proof.c.into(), delta_prime_delta_m.into_affine().neg().into()),
         ]
         .iter(),
     );
@@ -111,7 +108,6 @@ pub fn vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
         let hash = Blake2b::new()
         .chain(to_bytes!(&proof.a).unwrap())
         .chain(to_bytes!(&proof.b).unwrap())
-        .chain(to_bytes!(&proof.c).unwrap())
         .chain(to_bytes!(&proof.delta_prime).unwrap());
         let mut output = [0u8; 64];
         output.copy_from_slice(&hash.finalize());
@@ -131,20 +127,20 @@ pub fn vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
         FixedBaseMSM::get_window_table::<E::G2Projective>(scalar_bits, delta_g2_window, pvk.vk.delta_g2.into_projective());
     let elem_g2 =
         FixedBaseMSM::multi_scalar_mul::<E::G2Projective>(scalar_bits, delta_g2_window, &delta_g2_table, &m_fr);
-        
+    /*    
     let zt_delta_g1_window = FixedBaseMSM::get_mul_window_size(size_proofs);
     let zt_delta_g1_table =
         FixedBaseMSM::get_window_table::<E::G1Projective>(scalar_bits, zt_delta_g1_window, pvk.vk.zt_delta_g1.into_projective());
     let elem_g1 =
         FixedBaseMSM::multi_scalar_mul::<E::G1Projective>(scalar_bits, zt_delta_g1_window, &zt_delta_g1_table, &m_fr_sq);
-        
+    */    
     println!("Ended the MSM part");
 
 
     
     let mut bool_results: Vec<_> = Vec::new();
-    for (((x,y),z),w) in elem_g2.iter().zip(proofs.iter()).zip(prepared_inputs.iter()).zip(elem_g1.iter()){
-        
+    for ((x,y),z) in elem_g2.iter().zip(proofs.iter()).zip(prepared_inputs.iter()){
+       // x -> [m_fr * delta]_2    ;;  y -> proof  ;;  z -> prepared_inputs 
 
         let tmp1 = E::final_exponentiation(&E::miller_loop(
             [
@@ -153,9 +149,7 @@ pub fn vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
                     z.into_affine().into(),
                     pvk.gamma_g2_neg_pc.clone(),
                 ),
-                (y.c.into(), y.delta_prime.neg().into()),
-                (y.d.into(),(*x + y.delta_prime.into_projective()).into_affine().into()),
-                (w.into_affine().into(),pvk.vk.delta_g2.neg().into()),
+                (y.c.into(), (*x + y.delta_prime.into_projective()).neg().into_affine().into()),
             ]
             .iter(),
         )).unwrap();
@@ -167,7 +161,7 @@ pub fn vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
     }
     
     let result = bool_results.iter().fold(true, |total, next| {total && *next});
-    //println!("result is {:?}", result);
+    println!("result is {:?}", result);
     
 
     

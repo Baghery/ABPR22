@@ -152,7 +152,6 @@ macro_rules! bpr20_verify_bench_vec {
 
         //The preprocessing happens of vk
 
-        //The preprocessing of input is here. Note that this is redundent in this situtation because it is the same instances.
         for _ in 0..NUM_PROVE_REPEATITIONS_AGG {
             prepared_inputs.push(vec![v]);
         }
@@ -161,12 +160,12 @@ macro_rules! bpr20_verify_bench_vec {
         //Verification starts!
         for p in 0..NUM_VERIFY_REPEATITIONS_AGG {
             
-            println!("loop number {:?} in verification loops", p);
+            println!("loop number {:?} in verification loops:", p);
             vec_verify_proof::<$bench_pairing_engine>(&vk, &proofs, &prepared_inputs).unwrap();
         }
 
         println!(
-            "verifying time for {}: {} ns",
+            "--> Verifying time for {}: {} ns",
             stringify!($bench_pairing_engine),
             start.elapsed().as_nanos() / NUM_VERIFY_REPEATITIONS_AGG as u128 / NUM_PROVE_REPEATITIONS_AGG as u128
         );

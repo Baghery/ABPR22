@@ -99,14 +99,12 @@ pub fn vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
     prepared_inputs: &Vec<E::G1Projective>,
 ) -> R1CSResult<bool> {
 
-    println!("Started the Hashing part");
 
     let num_proofs = proofs.len();
     let mut m_fr: Vec<E::Fr> = Vec::with_capacity(num_proofs as usize);
-    //let mut m_fr_sq: Vec<E::Fr> = Vec::with_capacity(num_proofs as usize);
     
     let start = ark_std::time::Instant::now();
-    for (i,proof) in proofs.iter().enumerate() {
+    for proof in proofs.iter() {
         let hash = Blake2b::new()
         .chain(to_bytes!(&proof.a).unwrap())
         .chain(to_bytes!(&proof.b).unwrap())
@@ -114,19 +112,9 @@ pub fn vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
         let mut output = [0u8; 64];
         output.copy_from_slice(&hash.finalize());
         m_fr.push(E::Fr::from_le_bytes_mod_order(&output));
-        //m_fr_sq.push(m_fr[i]*m_fr[i]);
-        //println!("{:?} m_fr element {:?}",i, m_fr[i]);
         
     }
-    println!(
-        "Hashing time is {} doing {} proofs",
-        start.elapsed().as_nanos() / num_proofs as u128,
-        num_proofs
-    );
 
-    println!("Started the MSM part");
-
-    let start = ark_std::time::Instant::now();
     let scalar_bits = E::Fr::size_in_bits();
 
     let delta_g2_window = FixedBaseMSM::get_mul_window_size(num_proofs);
@@ -134,20 +122,13 @@ pub fn vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
         FixedBaseMSM::get_window_table::<E::G2Projective>(scalar_bits, delta_g2_window, pvk.vk.delta_g2.into_projective());
     let elem_g2 =
         FixedBaseMSM::multi_scalar_mul::<E::G2Projective>(scalar_bits, delta_g2_window, &delta_g2_table, &m_fr);
-    /*    
-    let zt_delta_g1_window = FixedBaseMSM::get_mul_window_size(size_proofs);
-    let zt_delta_g1_table =
-        FixedBaseMSM::get_window_table::<E::G1Projective>(scalar_bits, zt_delta_g1_window, pvk.vk.zt_delta_g1.into_projective());
-    let elem_g1 =
-        FixedBaseMSM::multi_scalar_mul::<E::G1Projective>(scalar_bits, zt_delta_g1_window, &zt_delta_g1_table, &m_fr_sq);
-    */    
 
     println!(
-        "Exponentiation (G2) time is {} doing {} exponentiations",
+        "Hashing + Exponentiation (G2) time is {}ns per proof doing {} exponentiations",
         start.elapsed().as_nanos() / num_proofs as u128,
         num_proofs
     );
-    println!("Ended the MSM part");
+   
 
 
     
@@ -174,7 +155,7 @@ pub fn vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
     }
     
     let result = bool_results.iter().fold(true, |total, next| {total && *next});
-    println!("result is {:?}", result);
+    //println!("result is {:?}", result);
     
 
     

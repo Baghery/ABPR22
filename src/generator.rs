@@ -212,7 +212,6 @@ where
         delta_g2: delta_g2.into_affine(),
         gamma_abc_g1: E::G1Projective::batch_normalization_into_affine(&gamma_abc_g1),
         alpha_g1_beta_g2: E::pairing(alpha_g1, beta_g2),
-        //zt_gt: E::pairing(g1_zt_deltainverse, delta_g2),
         zt_delta_g1: g1_zt_deltainverse.into_affine(),
     };
 

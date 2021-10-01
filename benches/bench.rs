@@ -150,8 +150,7 @@ macro_rules! bpr20_verify_bench_vec {
         //Now the counter starts  
         let start = ark_std::time::Instant::now();
 
-        //The preprocessing happens of vk
-
+        //The preprocessing of the inputs
         for _ in 0..NUM_PROVE_REPEATITIONS_AGG {
             prepared_inputs.push(vec![v]);
         }
@@ -185,13 +184,12 @@ fn bench_prove() {
 
 
 fn bench_verify() {
-   /* 
     bpr20_verify_bench!(bls, BlsFr, Bls12_381);
     bpr20_verify_bench!(mnt4, MNT4Fr, MNT4_298);
     bpr20_verify_bench!(mnt6, MNT6Fr, MNT6_298);
     bpr20_verify_bench!(mnt4big, MNT4BigFr, MNT4_753);
     bpr20_verify_bench!(mnt6big, MNT6BigFr, MNT6_753);
-    */
+    
     bpr20_verify_bench_vec!(bls, BlsFr, Bls12_381);
     bpr20_verify_bench_vec!(mnt4, MNT4Fr, MNT4_298);
     bpr20_verify_bench_vec!(mnt6, MNT6Fr, MNT6_298);
@@ -202,6 +200,6 @@ fn bench_verify() {
 }
 
 fn main() {
-    //bench_prove();
+    bench_prove();
     bench_verify();
 }

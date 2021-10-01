@@ -83,7 +83,6 @@ where
 
     let c_acc_time = start_timer!(|| "Compute C");
 
-    //drop(h_assignment);
     // Compute C
     let prover = cs.borrow().unwrap();
 
@@ -106,8 +105,8 @@ where
         .map(|s| s.into_repr())
         .collect::<Vec<_>>();
 
-    //drop(prover);
-    //drop(cs);
+    
+    
 
     let assignment = [&input_assignment[..], &aux_assignment[..]].concat();
     drop(aux_assignment);
@@ -145,6 +144,7 @@ where
 
     let c_time = start_timer!(|| "Finish C");
 
+    //Compute the hash message
     let hash = Blake2b::new()
     .chain(to_bytes!(&g_a.into_affine()).unwrap())
     .chain(to_bytes!(&g2_b.into_affine()).unwrap())

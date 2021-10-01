@@ -92,15 +92,15 @@ pub fn verify_proof<E: PairingEngine>(
 
 
 /// Verify a vector of proofs `proofs` against the prepared verification key `pvk` and prepared public
-/// inputs. This should be preferred over [`verify_proof`] if the instance's public inputs are
-/// known in advance.
+/// inputs.
 pub fn vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
     pvk: &PreparedVerifyingKey<E>,
     proofs: &Vec<Proof<E>>,
     prepared_inputs: &Vec<E::G1Projective>,
 ) -> R1CSResult<bool> {
-    let mut m_fr: Vec<E::Fr> = Vec::new();
-    let mut size_proofs = 0usize;
+    let num_proofs = proofs.len();
+    let mut m_fr: Vec<E::Fr> = Vec::with_capacity(num_proofs as usize);
+
     for proof in proofs.iter() {
         let hash = Blake2b::new()
         .chain(to_bytes!(&proof.a).unwrap())
@@ -110,12 +110,11 @@ pub fn vec_verify_proof_with_prepared_inputs<E: PairingEngine>(
         let mut output = [0u8; 64];
         output.copy_from_slice(&hash.finalize());
         m_fr.push(E::Fr::from_le_bytes_mod_order(&output));
-        size_proofs +=1 ;
     }
 
     
     let scalar_bits = E::Fr::size_in_bits();
-    let delta_g2_window = FixedBaseMSM::get_mul_window_size(size_proofs);
+    let delta_g2_window = FixedBaseMSM::get_mul_window_size(num_proofs);
     let delta_g2_table =
         FixedBaseMSM::get_window_table::<E::G2Projective>(scalar_bits, delta_g2_window, pvk.vk.delta_g2.into_projective());
     let elem_g2 =

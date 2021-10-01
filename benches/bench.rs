@@ -19,7 +19,7 @@ use ark_relations::{
 use ark_std::ops::Mul;
 
 const NUM_PROVE_REPEATITIONS: usize = 10;
-const NUM_VERIFY_REPEATITIONS: usize = 10000;
+const NUM_VERIFY_REPEATITIONS: usize = 100;
 const NUM_PROVE_REPEATITIONS_AGG: usize = 100;
 const NUM_VERIFY_REPEATITIONS_AGG: usize = 4;
 
@@ -122,7 +122,7 @@ macro_rules! bpr20_verify_bench {
     };
 }
 
-///
+/// Bench for the vectorized version of 'verify' using MSM for multiscalar exponentiation
 macro_rules! bpr20_verify_bench_vec {
     ($bench_name:ident, $bench_field:ty, $bench_pairing_engine:ty) => {
         let rng = &mut ark_std::test_rng();
@@ -146,9 +146,8 @@ macro_rules! bpr20_verify_bench_vec {
 
         //Now the counter starts  
         let start = ark_std::time::Instant::now();
-        //The preprocessing happens of vk
      
-        //The preprocessing of input is here. Note that this is redundent in this situtation because it is the same instances.
+        //The preprocessing of input is here. 
         for _ in 0..NUM_PROVE_REPEATITIONS_AGG {
             prepared_inputs.push(vec![v]);
         }

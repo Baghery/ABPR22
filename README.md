@@ -7,7 +7,7 @@
     <a href="https://deps.rs/repo/github/arkworks-rs/groth16"><img src="https://deps.rs/repo/github/arkworks-rs/groth16/status.svg"></a>
 </p>
 
-The arkworks ecosystem consist of Rust libraries for designing and working with __zero knowledge succinct non-interactive arguments (zkSNARKs)__. This repository contains an efficient implementation of the zkSNARK of [[BPR20]](https://eprint.iacr.org/2020/1306).
+The arkworks ecosystem consist of Rust libraries for designing and working with __zero knowledge succinct non-interactive arguments (zkSNARKs)__. This repository contains an efficient implementation of the zkSNARK of [[BG18]](https://eprint.iacr.org/2018/187).
 
 This library is released under the MIT License and the Apache v2 License (see [License](#license)).
 
@@ -22,7 +22,7 @@ rustup install stable
 
 After that, use `cargo`, the standard Rust build tool, to build the library:
 ```bash
-git clone https://github.com/arkworks-rs/groth16.git
+git clone -b BG18 https://github.com/Baghery/ABPR21/tree/BG18.git
 cargo build --release
 ```
 

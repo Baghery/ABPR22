@@ -1,4 +1,4 @@
-<h1 align="center">ark-bpr20 (CRH-based)</h1>
+<h1 align="center">ark-bpr20 (CRH_Based)</h1>
 
 <p align="center">
     <img src="https://github.com/arkworks-rs/groth16/workflows/CI/badge.svg?branch=master">

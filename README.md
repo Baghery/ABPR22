@@ -7,7 +7,7 @@
     <a href="https://deps.rs/repo/github/arkworks-rs/groth16"><img src="https://deps.rs/repo/github/arkworks-rs/groth16/status.svg"></a>
 </p>
 
-The arkworks ecosystem consist of Rust libraries for designing and working with __zero knowledge succinct non-interactive arguments (zkSNARKs)__. This repository contains an efficient implementation of the simulation extractable zk-SNARK published in CANS20 paper [[BPR20a]](https://link.springer.com/chapter/10.1007/978-3-030-65411-5_22) which is also avalable in Section 4 of [[BPR20b]](https://eprint.iacr.org/2020/1306). The implementation is done by Oussama Amine (University of Oslo) and Karim Baghery (KU Leuven).
+The arkworks ecosystem consist of Rust libraries for designing and working with __zero knowledge succinct non-interactive arguments (zkSNARKs)__. This repository contains an efficient implementation of the simulation extractable zk-SNARK published in CANS20 paper [[BPR20]](https://link.springer.com/chapter/10.1007/978-3-030-65411-5_22) which is also avalable in Section 3 of [[ABPR21]](https://eprint.iacr.org/2020/1306). The implementation is done by Oussama Amine (University of Oslo) and Karim Baghery (KU Leuven).
 
 This library is released under the MIT License and the Apache v2 License (see [License](#license)).
 
@@ -22,8 +22,8 @@ rustup install stable
 
 After that, use `cargo`, the standard Rust build tool, to build the library:
 ```bash
-git clone -b CRH-based https://github.com/arkworks-rs/bpr20.git CRH-based
-cd CRH-based
+git clone -b CRH_Based https://github.com/Baghery/ABPR21.git
+cd CRH_Based
 cargo build --release
 ```
 
@@ -35,39 +35,6 @@ and for benchmarking the scheme with `RAYON_NUM_THREADS=4` threads, run the foll
 ```bash
 RAYON_NUM_THREADS=4 cargo bench --no-default-features --features "std parallel" -- --nocapture
 ```
-
-## Empirical performance
-
-Below is the empricial performance of several weak and strong simulation extractable zk-SNARKs in `Arkworks`. Note that Groth's zk-SNARK is proven to achieve weak simulation extractability [[BKSV20]](https://eprint.iacr.org/2020/811).  
-We benchmark the zk-SNARKs on an R1CS instance for different curves and report proving and verifying times for each constrain with 100 iterations for the prover and 100.000 iterations for the verification. 
-The benchmarks were obtained using a 2.50 GHz Intel Core i5-7200U CPU, in multi-threaded mode with N=4, with 16 GB RAM, using the Bls12_381, MNT4_298, MNT6_298, MNT4_753 and MNT6_753 curves.
-
-Abbreviations used: <i>SE</i> = simulation extractable, <i>ns</i> = nanoseconds, <i>RO</i> = Random Oracle, <i>CRH</i> = Collision Resistant Hash.
-
-| Curve | zk-SNARK | Secuiry | Per-constraint proving time, ns | Per-constraint verifying time, ns |
-| :--- | :---: | :---: | :---: | :---: |
-| BLS12-381 | [Groth16](arkworks-rs/groth16)               | Weak SE   | 28513 | ??? |
-| BLS12-381 | [GM17](arkworks-rs/gm17)                     | Strong SE | ???   | ??? |
-| BLS12-381 | [BPR20-RO](arkworks-rs/bpr20/RO-based)       | Strong SE | ???   | ??? |
-| BLS12-381 | [BPR20-CRH](arkworks-rs/bpr20/CRH-based)     | Strong SE | ???   | ??? |
-| **MNT4-298** | [Groth16](arkworks-rs/groth16)            | Weak SE   | 29462 | ??? |
-| **MNT4-298** | [GM17](arkworks-rs/gm17)                  | Strong SE | ???   | ??? |
-| **MNT4-298** | [BPR20-RO](arkworks-rs/bpr20/RO-based)    | Strong SE | ???   | ??? |
-| **MNT4-298** | [BPR20-CRH](arkworks-rs/bpr20/CRH-based)  | Strong SE | ???   | ??? |
-| MTN6-298 | [Groth16](arkworks-rs/groth16)                | Weak SE   | 26478 | ??? |
-| MTN6-298 | [GM17](arkworks-rs/gm17)                      | Strong SE | ???   | ??? |
-| MTN6-298 | [BPR20-RO](arkworks-rs/bpr20/RO-based)        | Strong SE | ???   | ??? |
-| MTN6-298 | [BPR20-CRH](arkworks-rs/bpr20/CRH-based)      | Strong SE | ???   | ??? |
-| **MNT4-753** | [Groth16](arkworks-rs/groth16)            | Weak SE   | 255144 | ??? |
-| **MNT4-753** | [GM17](arkworks-rs/gm17)                  | Strong SE | ???   | ??? |
-| **MNT4-753** | [BPR20-RO](arkworks-rs/bpr20/RO-based)    | Strong SE | ???   | ??? |
-| **MNT4-753** | [BPR20-CRH](arkworks-rs/bpr20/CRH-based)  | Strong SE | ???   | ??? |
-| MTN6-753 | [Groth16](arkworks-rs/groth16)                | Weak SE   | 198195 | ??? |
-| MTN6-753 | [GM17](arkworks-rs/gm17)                      | Strong SE | ???   | ??? |
-| MTN6-753 | [BPR20-RO](arkworks-rs/bpr20/RO-based)        | Strong SE | ???   | ??? |
-| MTN6-753 | [BPR20-CRH](arkworks-rs/bpr20/CRH-based)      | Strong SE | ???   | ??? |
-
-
 
 ## License
 

@@ -43,32 +43,35 @@ We benchmark the zk-SNARKs on an R1CS instance for different curves and report p
 All experiments are done on a desktop machine with Ubuntu 20.4.2 LTS, an Intel Core i9-9900 processor at base frequency 3.1 GHz, and 128GB of memory. 
 Proof generations are done in the multi-thread mode, with 16 threads, while proof verifications are done in a single-thread mode. 
 
-Abbreviations used: <i>SE</i> = simulation extractable, <i>ns</i> = nanoseconds, <i>RO</i> = Random Oracle, <i>CRH</i> = Collision Resistant Hash.
+Abbreviations used: <i>SE</i> = Simulation Extractable, <i>PCPT</i> = Per-Constraint Proving Time, <i>ns</i> = nanoseconds, <i>RO</i> = Random Oracle, <i>CRH</i> = Collision Resistant Hash.
 
-| Curve | zk-SNARK | Secuiry | Per-constraint proving time, ns | Per-constraint verifying time, ns |
-| :--- | :---: | :---: | :---: | :---: |
-| BLS12-381 | [Groth16](arkworks-rs/groth16)               | Weak SE   | 28513 | ??? |
-| BLS12-381 | [GM17](arkworks-rs/gm17)                     | Strong SE | ???   | ??? |
-| BLS12-381 | [BPR20-RO](arkworks-rs/bpr20/RO-based)       | Strong SE | ???   | ??? |
-| BLS12-381 | [BPR20-CRH](arkworks-rs/bpr20/CRH-based)     | Strong SE | ???   | ??? |
-| **MNT4-298** | [Groth16](arkworks-rs/groth16)            | Weak SE   | 29462 | ??? |
-| **MNT4-298** | [GM17](arkworks-rs/gm17)                  | Strong SE | ???   | ??? |
-| **MNT4-298** | [BPR20-RO](arkworks-rs/bpr20/RO-based)    | Strong SE | ???   | ??? |
-| **MNT4-298** | [BPR20-CRH](arkworks-rs/bpr20/CRH-based)  | Strong SE | ???   | ??? |
-| MTN6-298 | [Groth16](arkworks-rs/groth16)                | Weak SE   | 26478 | ??? |
-| MTN6-298 | [GM17](arkworks-rs/gm17)                      | Strong SE | ???   | ??? |
-| MTN6-298 | [BPR20-RO](arkworks-rs/bpr20/RO-based)        | Strong SE | ???   | ??? |
-| MTN6-298 | [BPR20-CRH](arkworks-rs/bpr20/CRH-based)      | Strong SE | ???   | ??? |
-| **MNT4-753** | [Groth16](arkworks-rs/groth16)            | Weak SE   | 255144 | ??? |
-| **MNT4-753** | [GM17](arkworks-rs/gm17)                  | Strong SE | ???   | ??? |
-| **MNT4-753** | [BPR20-RO](arkworks-rs/bpr20/RO-based)    | Strong SE | ???   | ??? |
-| **MNT4-753** | [BPR20-CRH](arkworks-rs/bpr20/CRH-based)  | Strong SE | ???   | ??? |
-| MTN6-753 | [Groth16](arkworks-rs/groth16)                | Weak SE   | 198195 | ??? |
-| MTN6-753 | [GM17](arkworks-rs/gm17)                      | Strong SE | ???   | ??? |
-| MTN6-753 | [BPR20-RO](arkworks-rs/bpr20/RO-based)        | Strong SE | ???   | ??? |
-| MTN6-753 | [BPR20-CRH](arkworks-rs/bpr20/CRH-based)      | Strong SE | ???   | ??? |
-
-
+| Curve | zk-SNARK | Secuiry | PCPT, ns | Proof, bytes |  Verifier, 1 proof |  Verifier, 100 proofs | Verifier, 1000 proofs | 
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | 
+| BLS12-381 | [Gro16](https://github.com/arkworks-rs/groth16)                  | Weak SE   | 5026  | 127.5 | 1.90 ms |  0.19 sec   |  1.90 sec |
+| BLS12-381 | [GM17](https://github.com/arkworks-rs/gm17)                      | Strong SE | 11042 | 127.5 | 3.32 ms |  0.322 sec  |  3.32 sec |
+| BLS12-381 | [BG18](https://github.com/Baghery/ABPR21/tree/BG18)              | Strong SE | 5052  | 223.1 | 3.52 ms |  0.352 sec  |  3.52 sec |
+| BLS12-381 | [BPR20-CRH](https://github.com/Baghery/ABPR21/tree/CRH_Based)    | Strong SE | 5042  | 223.1 | 4.85 ms |  0.360 sec  |  3.50 sec |
+| BLS12-381 | [BPR20-RO](https://github.com/Baghery/ABPR21/tree/RO_Based)      | Strong SE | 5041  | 191.2 | 2.39 ms |  0.194 sec  |  1.91 sec |
+| **MNT4-298** | [Gro16](https://github.com/arkworks-rs/groth16)               | Weak SE   | 4830  | 149.0 | 2.67 ms |  0.267 sec  |  2.67 sec |
+| **MNT4-298** | [GM17](https://github.com/arkworks-rs/gm17)                   | Strong SE | 10025 | 149.0 | 3.80 ms |  0.380 sec  |  3.80 sec |
+| **MNT4-298** | [BG18](https://github.com/Baghery/ABPR21/tree/BG18)           | Strong SE | 4879  | 260.7 | 4.32 ms |  0.432 sec  |  4.32 sec |
+| **MNT4-298** | [BPR20-CRH](https://github.com/Baghery/ABPR21/tree/CRH_Based) | Strong SE | 4881  | 260.7 | 4.45 ms |  0.311 sec  |  3.05 sec |
+| **MNT4-298** | [BPR20-RO](https://github.com/Baghery/ABPR21/tree/RO_Based)   | Strong SE | 4875  | 223.5 | 3.33 ms |  0.271 sec  |  2.68 sec |
+| MTN6-298  | [Gro16](https://github.com/arkworks-rs/groth16)                  | Weak SE   | 5794  | 186.2 | 4.94 ms |  0.494 sec   |  4.91 sec |
+| MTN6-298  | [GM17](https://github.com/arkworks-rs/gm17)                      | Strong SE | 11427 | 186.2 | 7.07 ms |  0.707 sec  |  7.07 sec |
+| MTN6-298  | [BG18](https://github.com/Baghery/ABPR21/tree/BG18)              | Strong SE | 5831  | 335.2 | 8.07 ms |  0.807 sec  |  8.07 sec |
+| MTN6-298  | [BPR20-CRH](https://github.com/Baghery/ABPR21/tree/CRH_Based)    | Strong SE | 5824  | 335.2 | 8.34 ms |  0.582 sec  |  5.72 sec |
+| MTN6-298  | [BPR20-RO](https://github.com/Baghery/ABPR21/tree/RO_Based)      | Strong SE | 5810  | 298.0 | 6.11 ms |  0.501 sec  |  4.97 sec |
+| **MNT4-753** | [Gro16](https://github.com/arkworks-rs/groth16)               | Weak SE   | 30247 | 376.5 | 29.1 ms |  2.91 sec  |  29.1 sec |
+| **MNT4-753** | [GM17](https://github.com/arkworks-rs/gm17)                   | Strong SE | 83120 | 376.5 | 41.6 ms |  4.16 sec  |  41.6 sec |
+| **MNT4-753** | [BG18](https://github.com/Baghery/ABPR21/tree/BG18)           | Strong SE | 30863 | 658.8 | 47.3 ms |  4.73 sec  |  47.3 sec |
+| **MNT4-753** | [BPR20-CRH](https://github.com/Baghery/ABPR21/tree/CRH_Based) | Strong SE | 30887 | 658.8 | 45.5 ms |  3.41 sec  |  33.8 sec |
+| **MNT4-753** | [BPR20-RO](https://github.com/Baghery/ABPR21/tree/RO_Based)   | Strong SE | 30760 | 564.7 | 33.9 ms |  2.94 sec  |  29.2 sec |
+| MTN6-753  | [Gro16](https://github.com/arkworks-rs/groth16)                  | Weak SE   | 33298  | 470.6 | 53.6 ms |  5.36 sec   | 53.6 sec |
+| MTN6-753  | [GM17](https://github.com/arkworks-rs/gm17)                      | Strong SE | 83121  | 470.6 | 76.9 ms |  7.69 sec  |  76.9 sec |
+| MTN6-753  | [BG18](https://github.com/Baghery/ABPR21/tree/BG18)              | Strong SE | 33358  | 847.1 | 88.5 ms |  8.85 sec  |  88.5 sec |
+| MTN6-753  | [BPR20-CRH](https://github.com/Baghery/ABPR21/tree/CRH_Based)    | Strong SE | 33359  | 847.1 | 85.4 ms |  6.33 sec  |  63.1 sec |
+| MTN6-753  | [BPR20-RO](https://github.com/Baghery/ABPR21/tree/RO_Based)      | Strong SE | 33345  | 753.0 | 64.4 ms |  5.42 sec  |  53.8 sec |
 
 ## License
 

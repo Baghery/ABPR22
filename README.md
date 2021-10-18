@@ -31,6 +31,11 @@ This library comes with unit tests for each of the provided crates. Run the test
 cargo test
 ```
 
+and for benchmarking the scheme with `RAYON_NUM_THREADS=4` threads, run the following command,  
+```bash
+RAYON_NUM_THREADS=4 cargo bench --no-default-features --features "std parallel" -- --nocapture
+```
+
 ## License
 
 This library is licensed under either of the following licenses, at your discretion.

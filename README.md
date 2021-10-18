@@ -1,4 +1,4 @@
-<h1 align="center">ark-bpr20 (RO-based)</h1>
+<h1 align="center">ark-abpr21 (RO_Based)</h1>
 
 <p align="center">
     <img src="https://github.com/arkworks-rs/groth16/workflows/CI/badge.svg?branch=master">
@@ -7,7 +7,7 @@
     <a href="https://deps.rs/repo/github/arkworks-rs/groth16"><img src="https://deps.rs/repo/github/arkworks-rs/groth16/status.svg"></a>
 </p>
 
-The arkworks ecosystem consist of Rust libraries for designing and working with __zero knowledge succinct non-interactive arguments (zkSNARKs)__. This repository contains an efficient implementation of the RO-based simulation extractable zk-SNARK presented in Section 4 of [[BPR20b]](https://eprint.iacr.org/2020/1306) which is the extended version of the paper [[BPR20a]](https://link.springer.com/chapter/10.1007/978-3-030-65411-5_22) published in CANS20 paper. The imlementations is done by Oussama Amine (University of Oslo) and Karim Baghery (KU Leuven).
+The arkworks ecosystem consist of Rust libraries for designing and working with __zero knowledge succinct non-interactive arguments (zkSNARKs)__. This repository contains an efficient implementation of the RO-based simulation extractable variant of [[Groth16]](https://eprint.iacr.org/2016/260) zk-SNARK presented in Section 4 of [[ABPR21]](https://eprint.iacr.org/2020/1306) which is the extended version of the paper [[BPR20]](https://link.springer.com/chapter/10.1007/978-3-030-65411-5_22) published in CANS20 paper. The imlementations is done by Oussama Amine (University of Oslo) and Karim Baghery (KU Leuven).
 
 This library is released under the MIT License and the Apache v2 License (see [License](#license)).
 
@@ -22,8 +22,8 @@ rustup install stable
 
 After that, use `cargo`, the standard Rust build tool, to build the library:
 ```bash
-git clone -b RO-based https://github.com/arkworks-rs/bpr20.git RO-based
-cd RO-based
+git clone -b RO_Based https://github.com/Baghery/ABPR21.git
+cd RO_Based
 cargo build --release
 ```
 
@@ -39,8 +39,9 @@ RAYON_NUM_THREADS=4 cargo bench --no-default-features --features "std parallel" 
 ## Empirical performance
 
 Below is the empricial performance of several weak and strong simulation extractable zk-SNARKs in `Arkworks`. Note that Groth's zk-SNARK is proven to achieve weak simulation extractability [[BKSV20]](https://eprint.iacr.org/2020/811).  
-We benchmark the zk-SNARKs on an R1CS instance for different curves and report proving and verifying times for each constrain with 100 iterations for the prover and 100.000 iterations for the verification. 
-The benchmarks were obtained using a 2.50 GHz Intel Core i5-7200U CPU, in multi-threaded mode with N=4, with 16 GB RAM, using the Bls12_381, MNT4_298, MNT6_298, MNT4_753 and MNT6_753 curves.
+We benchmark the zk-SNARKs on an R1CS instance for different curves and report proving and verifying times for each constrain with 100 iterations for the prover and 10.000 iterations for the verification. 
+All experiments are done on a desktop machine with Ubuntu 20.4.2 LTS, an Intel Core i9-9900 processor at base frequency 3.1 GHz, and 128GB of memory. 
+Proof generations are done in the multi-thread mode, with 16 threads, while proof verifications are done in a single-thread mode. 
 
 Abbreviations used: <i>SE</i> = simulation extractable, <i>ns</i> = nanoseconds, <i>RO</i> = Random Oracle, <i>CRH</i> = Collision Resistant Hash.
 

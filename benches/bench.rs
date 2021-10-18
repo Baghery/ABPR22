@@ -19,8 +19,8 @@ use ark_std::ops::Mul;
 use ark_bpr20::{Proof, vec_verify_proof};
 
 const NUM_PROVE_REPEATITIONS: usize = 10;
-const NUM_VERIFY_REPEATITIONS: usize = 50000;
-const NUM_PROVE_REPEATITIONS_AGG: usize = 10000;
+const NUM_VERIFY_REPEATITIONS: usize = 1000;
+const NUM_PROVE_REPEATITIONS_AGG: usize = 100;
 const NUM_VERIFY_REPEATITIONS_AGG: usize = 2;
 
 #[derive(Copy)]
@@ -101,7 +101,7 @@ macro_rules! bpr20_verify_bench {
             a: Some(<$bench_field>::rand(rng)),
             b: Some(<$bench_field>::rand(rng)),
             num_variables: 10,
-            num_constraints: 65536,
+            num_constraints: 64,
         };
 
         let (pk, vk) = BPR20::<$bench_pairing_engine>::circuit_specific_setup(c, rng).unwrap();
@@ -171,9 +171,7 @@ macro_rules! bpr20_verify_bench_vec {
     };
 }
 
-
-
-
+// Benchmark for prover 
 fn bench_prove() {
     bpr20_prove_bench!(bls, BlsFr, Bls12_381);
     bpr20_prove_bench!(mnt4, MNT4Fr, MNT4_298);
@@ -182,24 +180,27 @@ fn bench_prove() {
     bpr20_prove_bench!(mnt6big, MNT6BigFr, MNT6_753);
 }
 
-
+// Benchmark for verifier 
 fn bench_verify() {
     bpr20_verify_bench!(bls, BlsFr, Bls12_381);
     bpr20_verify_bench!(mnt4, MNT4Fr, MNT4_298);
     bpr20_verify_bench!(mnt6, MNT6Fr, MNT6_298);
     bpr20_verify_bench!(mnt4big, MNT4BigFr, MNT4_753);
     bpr20_verify_bench!(mnt6big, MNT6BigFr, MNT6_753);
-    
+}
+
+// Benchmark for aggregated verifier
+fn bench_agg_verify() {   
     bpr20_verify_bench_vec!(bls, BlsFr, Bls12_381);
     bpr20_verify_bench_vec!(mnt4, MNT4Fr, MNT4_298);
     bpr20_verify_bench_vec!(mnt6, MNT6Fr, MNT6_298);
     bpr20_verify_bench_vec!(mnt4big, MNT4BigFr, MNT4_753);
-    bpr20_verify_bench_vec!(mnt6big, MNT6BigFr, MNT6_753);
-    
-    
+    bpr20_verify_bench_vec!(mnt6big, MNT6BigFr, MNT6_753);   
 }
+
 
 fn main() {
     bench_prove();
     bench_verify();
+	bench_agg_verify();
 }

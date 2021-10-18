@@ -41,7 +41,7 @@ RAYON_NUM_THREADS=4 cargo bench --no-default-features --features "std parallel" 
 Below is the empricial performance of several weak and strong simulation extractable zk-SNARKs in `Arkworks`. Note that Groth's zk-SNARK is proven to achieve weak simulation extractability [[BKSV20]](https://eprint.iacr.org/2020/811).  
 We benchmark the zk-SNARKs on an R1CS instance for different curves and report proving and verifying times for each constrain with 100 iterations for the prover and 10.000 iterations for the verification. 
 All experiments are done on a desktop machine with Ubuntu 20.4.2 LTS, an Intel Core i9-9900 processor at base frequency 3.1 GHz, and 128GB of memory. 
-Proof generations are done in the multi-thread mode, with 16 threads, while proof verifications are done in a single-thread mode. In the verification of our constructions, we use Multi-Scalar Multiplication (MSM) techniques one to optimize the computation of exponentiations in $G_2$ and $G_T$. 
+Proof generations are done in the multi-thread mode, with 16 threads, while proof verifications are done in a single-thread mode. In the verification of our constructions, in the case of verifying more than one proof, we use Multi-Scalar Multiplication (MSM) techniques to optimize the computation of exponentiations in $G_2$ and $G_T$. 
 
 Abbreviations used: <i>SE</i> = Simulation Extractable, <i>PCPT</i> = Per-Constraint Proving Time, <i>ns</i> = nanoseconds, <i>RO</i> = Random Oracle, <i>CRH</i> = Collision Resistant Hash.
 

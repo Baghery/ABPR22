@@ -22,7 +22,7 @@ rustup install stable
 
 After that, use `cargo`, the standard Rust build tool, to build the library:
 ```bash
-git clone -b RO_Based https://github.com/Baghery/ABPR21.git
+git clone -b RO_Based https://github.com/Baghery/ABPR22.git
 cd RO_Based
 cargo build --release
 ```
